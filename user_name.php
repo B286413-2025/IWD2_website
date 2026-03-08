@@ -2,15 +2,42 @@
 session_start();
 require_once 'login.php';
 echo<<<_HEAD1
-<html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Protein conservation analysis</title>
+</head>
 <body onload="displayForm()">
 _HEAD1;
 
 //TODO: add a nice welcome message
 //
 echo<<<_WELCOME
-<h1>Website name</h1>
-<h2>Welcome message to the users, perhaps a short description</h2>
+<header>
+<h1>Protein conservation analysis</h1>
+<h2>Welcome to my website for protein conservation!</h2>
+<p>In this site you can look at the conservation levels of a protein family from a certain taxonomic group.
+<br/>Conservation analysis will be done using 
+<abbr title="EMBL's European Bioinformatics Institute">
+<a href="https://www.ebi.ac.uk/">EMBL-EBI</a></abbr>
+<a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo">Clustal Omega</a>, a multiple sequences alignment tool.
+<br/>Further downstream analysis includes searching for known motifs agaist the
+<a href="https://prosite.expasy.org/">PROSITE</a> protein family and domains database.
+<br/>That will be done with the EMBOSS tool
+<a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/patmatmotifs">patmatmotifs</a>.
+</p>
+</header>
+<hr>
+<p>
+You can proceed to the query page by submitting the form below.
+<br/>You can choose whether to save your results on the site by entering a user name,
+<br/>or simply continue without saving them.
+<br/>To view an example analysis for conservation of glucose-6-phosphatase proteins
+<br/>in birds (<i>Aves</i>), click
+<a href=""https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/example.php>here</a>.
+</p>
+<hr>
 _WELCOME;
 
 // Checking connection to database using details from login.php
@@ -18,9 +45,9 @@ try {
 	$dsn = "mysql:host=127.0.0.1;dbname=$database;charset=utf8mb4";
 	$conn = new PDO($dsn, $username, $password);
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        echo "\nConnected successfully to the database!<br/>";
+        echo "\nConnected successfully to the database!";
 } catch(PDOException $e) {
-	echo "<br/><br/><b><font color=\"red\">Connection failed</font></b>:<br/>" . $e->getMessage();
+	echo "<br/><br/><b><font color=\"red\">Connection failed, the site does not work right now :(</font></b>:<br/>" . $e->getMessage();
 }
    echo <<<_EOP
 <script>
@@ -75,7 +102,7 @@ document.getElementById("save_choice").innerHTML=`<form action="indexp.php" meth
 // deleting form if not saving
 function delForm()
 {
-document.getElementById("save_choice").innerHTML=`<form action="indexp.php" method="post">
+document.getElementById("save_choice").innerHTML=`<form action="query.php" method="post">
 <input type="hidden" name="user_name" value="no-save" />
 <p><input type="submit" value="continue" /></p>
 </form>`;
@@ -89,7 +116,7 @@ document.getElementById("save_choice").innerHTML=`<form action="indexp.php" meth
 </p>
 <p>
 <input type="radio" name="save_choice" id="save_no" value="no-save" onclick="delForm()">
-<label for="save_no">Don't save results</label>
+<label for="save_no">Continue without saving results</label>
 </p>
 <p id="save_choice"></p>
 _EOP;
