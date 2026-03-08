@@ -1,6 +1,5 @@
 <?php // Setting menu options, adapted from class code
 echo <<<_MENU1
-   Your options are <br>
     <table width ="70%" border="0" cellspacing="0" align="center"> <tr>
    <td bgcolor="#DCEFFE"><div align="center">
 
