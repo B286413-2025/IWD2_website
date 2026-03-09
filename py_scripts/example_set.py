@@ -19,8 +19,9 @@ Entrez.api_key = subprocess.check_output("echo ${NCBI_API_KEY}", shell=True).rst
 prot_fam = "glucose-6-phosphatase".lower()
 tax_group = "Aves".lower()
 
-# Out file to enter into MySQL
-sql_file = "../downloaded_sequences/example_record.csv"
+# Out files to MySQL and ClustalO, respectively
+sql_file = "/home/s2883992/public_html/website/downloaded_sequences/example_record.csv"
+fa_file = "/home/s2883992/public_html/website/downloaded_sequences/example_record.fasta"
 
 # NCBI query
 query = f"{prot_fam}[Prot] AND {tax_group}[Organism] NOT partial"
@@ -47,12 +48,18 @@ else:
     print(f"{match_num} matches were found, downloading sequences...")
 
 # Downloading sequences while assessing quality:
-with open(sql_file, 'a') as filecon:
-    # Getting the relevant information
-    handle = Entrez.efetch(db='protein', id=result['IdList'], rettype='gb', retmode='text')
-    rec_iter = SeqIO.parse(handle, 'gb')
-    for record in rec_iter:
-        # Checking for under 5% of ambiguous bases
-        if (record.seq.lower().count('x') / len(record.seq)) < 0.05:
-            filecon.write(f'{record.name},{record.annotations["organism"]},{record.seq}\n')
+with open(sql_file, 'w') as filecon:
+    with open(fa_file, 'w') as facon:
+        # Getting the relevant information
+        handle = Entrez.efetch(db='protein', id=result['IdList'], rettype='gb', retmode='text')
+        rec_iter = SeqIO.parse(handle, 'gb')
+        for record in rec_iter:
+            # Checking for under 5% of ambiguous bases
+            if (record.seq.lower().count('x') / len(record.seq)) < 0.05:
+                # csv file for MySQL
+                filecon.write(f'{record.name},{record.annotations["organism"]},{record.seq}\n')
+                # FASTA format for ClustO
+                # Adapted from: https://warwick.ac.uk/fac/sci/moac/people/students/peter_cock/python/genbank2fasta/
+                facon.write(f'>{record.id} {record.description}\n{record.seq}\n')
+
 print("Done downloading sequences...")
