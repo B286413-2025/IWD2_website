@@ -66,7 +66,9 @@ if ($debug) {
 }
 
 // Stopping if exit code is not zero
-if ($download_rc !== 0) die("<p style='color:red'>Download failed.</p></body></html>");
+if ($download_rc !== 0) {
+	die("<p style='color:red'>Download failed.</p></body></html>");
+}
 // Or if files don't exist
 if (!file_exists($seq_tsv) || !file_exists($seq_fa)) {
     die("<p style='color:red'>Download finished but TSV/FASTA missing in workdir.</p></body></html>");
@@ -241,7 +243,107 @@ try {
     die("<pre>Failed storing alignment:\n" . htmlspecialchars($e->getMessage()) . "</pre></body></html>");
 }
 
-    
+// Running plotcon
+// Files
+$plot_prefix = $workdir . "/plotcon_job_" . (int)$jid;
+
+// Building command, parameters for future flexible script
+$win_size = 4;
+$img_fmt = "png";
+// TODO: Potential editions:
+// -gtitle $title
+// -gxtitle $xlab
+// -gytitle $ylab
+$plot_cmd = "plotcon " .
+    "-sequences " . escapeshellarg($msa_fasta) .
+    " -winsize " . (int)$win_size .
+    " -graph " . $img_fmt .
+    " -goutfile " . escapeshellarg($plot_prefix) .
+    " -auto";
+
+$plot_out = [];
+$plot_rc  = run_cmd($plot_cmd, $plot_out);
+
+if ($debug) {
+    echo "<pre>PLOTCON CMD:\n" . htmlspecialchars($plot_cmd) . "\nRC=$plot_rc\nOUT:\n"
+       . htmlspecialchars(implode("\n", $plot_out)) . "</pre>";
+}
+
+// Stopping if exit code is not zero
+if ($plot_rc !== 0) {
+	die("<p style='color:red'>Failed to plot</p></body></html>");
+}
+
+// Finding png file path
+// Intializing a filepath
+$plot_path = null;
+// Plotcon produces unpredictable filenames, searching for a pattern
+$png_files = glob($plot_prefix . "*." . $img_fmt);  
+if ($png_files !== false) {
+	foreach ($png_files as $a) {
+		if ($plot_path === null) {
+			$plot_path = $a;
+		} else {
+			// Keeping the newest file
+			if (filemtime($a) > filemtime($plot_patj)) {
+				$plot_path = $a;
+			}
+		}
+	}
+}
+// If file doesn't exist
+if ($plot_path === null || !is_file($plot_path) || !is_readable($plot_path)) {
+    if ($debug) {
+        echo "<pre>plotcon PNG not found or not readable.\nSelected plot_path: " .
+             htmlspecialchars(var_export($plot_path, true)) . "\n\nWORKDIR LIST:\n" .
+             htmlspecialchars(shell_exec("ls -lah " . escapeshellarg($workdir) . " 2>&1")) .
+             "</pre>";
+    }
+    die("<p style='color:red'>plotcon finished but PNG output was not found.</p></body></html>");
+}
+
+if ($debug) {
+    echo "<pre>Selected plot PNG: " . htmlspecialchars($plot_path) . "</pre>";
+}
+
+// Read outputs
+$png_bytes = file_get_contents($plot_path);
+if ($png_bytes === false || strlen($png_bytes) < 100) {
+    die("<p style='color:red'>Failed to read plot PNG bytes.</p></body></html>");
+}
+
+// Store in analysis_outputs
+try {
+	$stmt = $conn->prepare("
+		INSERT INTO analysis_outputs
+          	(job_id, analysis_type, mime_type, file_name, parameters, blob_data)
+        	VALUES (:jid, 'plotcon', :mime, :fname, :params, :blob)
+		");
+	// Indicating specific data types for the variables
+	$stmt->bindValue(':jid', (int)$jid, PDO::PARAM_INT);
+	$stmt->bindValue(':mime', 'image/' . $img_fmt , PDO::PARAM_STR);
+    	$stmt->bindValue(':fname', basename($plot_path, PDO::PARAM_STR));
+    	$stmt->bindValue(':params', json_encode(['winsize' => $win_size]), PDO::PARAM_STR);
+    	$stmt->bindValue(':blob', $png_bytes, PDO::PARAM_LOB);
+	$stmt->execute();
+	
+	// Retrieving analysis ID
+	$plot_output_id = (int)$conn->lastInsertId();
+    	echo "<p>plotcon stored in DB. output_id=" . (int)$plot_output_id . "</p>";
+
+    	// Show image and download link
+	$img_script = 'get_output.php?output_id=' . (int)$plot_output_id;
+    	echo "<h3>Conservation plot (plotcon)</h3>";
+    	echo "<img style='max-width:900px;width:100%;height:auto;border:1px solid #ccc' "
+       	. "src='" . $img_script . "' alt='plotcon plot'>";
+	echo "<p><a href='" . $img_script . "&download=1'>Download PNG</a></p>";
+
+} catch (Throwable $e) {
+	$stmt = $conn->prepare("UPDATE jobs SET status='error', error_message=? WHERE job_id=?");
+	$stmt->execute([$e->getMessage(), (int)$jid]);
+	die("<pre>Failed to store plotcon output:\n" . htmlspecialchars($e->getMessage()) . "</pre></body></html>");
+}
+
 echo <<<_HTML
 </body>
 </html>
