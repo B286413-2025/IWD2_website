@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-## Performing ClustalO on fasta sequences and generating a csvfile for SQL loading
+## Performing ClustalO on fasta sequences and generating a tsvfile for SQL loading
 
 # Modules
 import os, subprocess, sys, argparse
@@ -10,7 +10,7 @@ from Bio import SeqIO
 # Command line arguments
 parser = argparse.ArgumentParser(
         prog='RunClustalO',
-        description='MSA with ClustalO and csv file for SQL')
+        description='MSA with ClustalO and tsv file for SQL')
 parser.add_argument('infile', action='store', help='Input FASTA file')
 parser.add_argument('outfmt', action='store', help="Outfile format")
 parser.add_argument('outfile', action='store', help="Outfile path")

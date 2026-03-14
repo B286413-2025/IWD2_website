@@ -76,12 +76,10 @@ CREATE TABLE `motif_hits` (
 `hit_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 `job_id` INT UNSIGNED NOT NULL,
 `accession` VARCHAR(255) NOT NULL,
-`motif_id` VARCHAR(255) NULL,
 `motif_name` VARCHAR(255) NOT NULL,
 `start_pos` INT UNSIGNED NOT NULL,
 `end_pos` INT UNSIGNED NOT NULL,
 `score` DOUBLE NULL,
-`strand` ENUM('+', '-') NOT NULL, # Maybe ignore this because we have protein seqs
 `matched_sequence` VARCHAR(255) NULL,
 `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`hit_id`),
