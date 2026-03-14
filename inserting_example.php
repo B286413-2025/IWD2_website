@@ -230,11 +230,6 @@ try {
         $msa_text
     ]);
 
-    // Updating job status
-    $stmt = $conn->prepare("UPDATE jobs SET status='complete' WHERE job_id=?");
-    $stmt->execute([$jid]);
-
-    echo "<p><b>Example job complete.</b> job_id=" . (int)$jid . "</p>";
 
 } catch (Throwable $e) {
     // Updating failure and stopping	
@@ -343,6 +338,70 @@ try {
 	$stmt->execute([$e->getMessage(), (int)$jid]);
 	die("<pre>Failed to store plotcon output:\n" . htmlspecialchars($e->getMessage()) . "</pre></body></html>");
 }
+
+// patmatmotifs run and SQL loading
+// Directories
+$pat_py = $base_dir . "/py_scripts/patmat_to_sql.py";
+$motif_hits_tsv = $workdir . "/motif_hits_job_" . (int)$jid . ".tsv";
+
+// Running python
+$pat_cmd = "python3 " . escapeshellarg($pat_py) . " " .
+           escapeshellarg($seq_tsv) . " " .
+           escapeshellarg($motif_hits_tsv);
+$pat_rc  = run_cmd($pat_cmd, $pat_out);
+
+if ($debug) {
+    echo "<pre>PATMATMOTIFS CMD:\n" . htmlspecialchars($pat_cmd) .
+         "\nRC=$pat_rc\nOUT:\n" . htmlspecialchars(implode("\n", $pat_out)) . "</pre>";
+}
+
+// Updating jobs in case of an error
+if ($pat_rc !== 0) {
+    $stmt = $conn->prepare("UPDATE jobs SET status='error', error_message=? WHERE job_id=?");
+    $stmt->execute(["patmatmotifs python step failed:\n" . implode("\n", $pat_out), (int)$jid]);
+    die("<p style='color:red'>patmatmotifs failed. Job marked as error.</p></body></html>");
+}
+
+// Or no outptut
+if (!file_exists($motif_hits_tsv)) {
+    $stmt = $conn->prepare("UPDATE jobs SET status='error', error_message=? WHERE job_id=?");
+    $stmt->execute(["patmatmotifs finished but motif hits TSV missing: $motif_hits_tsv", (int)$jid]);
+    die("<p style='color:red'>motif hits TSV missing.</p></body></html>");
+}
+
+// Trying loading motifs into MySQl
+try {
+	$load_motifs = "
+		LOAD DATA LOCAL INFILE " . $conn->quote($motif_hits_tsv) . "
+		INTO TABLE motif_hits
+            	FIELDS TERMINATED BY '\t'
+            	LINES TERMINATED BY '\n'
+            	(@acc, @motif, @start, @end, @score, @mseq)
+            	SET
+                job_id = " . (int)$jid . ",
+                accession = @acc,
+                motif_name = @motif,
+                start_pos = @start,
+                end_pos = @end,
+                score = NULLIF(@score, ''),
+                matched_sequence = NULLIF(@mseq, '')
+		";
+	$conn->exec($load_motifs);
+	if ($debug) {
+		$n = $conn->query("SELECT COUNT(*) FROM motif_hits WHERE job_id=" . (int)$jid)->fetchColumn();
+		       	echo "<pre>motif_hits rows for job_id " . (int)$jid . ": " . htmlspecialchars((string)$n) . "</pre>";
+		}
+// Otherwise updating job faiure
+} catch (Throwable $e) {
+	$stmt = $conn->prepare("UPDATE jobs SET status='error', error_message=? WHERE job_id=?");
+	$stmt->execute([$e->getMessage(), (int)$jid]);
+	die("<pre>Failed loading motif hits:\n" . htmlspecialchars($e->getMessage()) . "</pre></body></html>");
+}
+
+// Updating job status
+$stmt = $conn->prepare("UPDATE jobs SET status='complete' WHERE job_id=?");
+$stmt->execute([$jid]);
+echo "<p><b>Example job complete.</b> job_id=" . (int)$jid . "</p>";
 
 echo <<<_HTML
 </body>
