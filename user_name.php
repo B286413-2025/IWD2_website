@@ -1,5 +1,6 @@
 <?php // Adapted from class code
 session_start();
+require_once 'set_cookies.php';
 require_once 'login.php';
 echo<<<_HEAD1
 <!doctype html>
@@ -7,12 +8,17 @@ echo<<<_HEAD1
 <head>
 <meta charset="UTF-8" />
 <title>Protein conservation analysis</title>
-</head>
-<body onload="displayForm()">
 _HEAD1;
 
+// Including cookies banner
+include 'cookies.html';
+
+echo<<<_HEAD2
+</head>
+<body onload="displayForm()">
+_HEAD2;
+
 //TODO: add a nice welcome message
-//
 echo<<<_WELCOME
 <header>
 <h1>Protein conservation analysis</h1>
@@ -35,7 +41,7 @@ You can proceed to the query page by submitting the form below.
 <br/>or simply continue without saving them.
 <br/>To view an example analysis for conservation of glucose-6-phosphatase proteins
 <br/>in birds (<i>Aves</i>), click
-<a href=""https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/example.php>here</a>.
+<a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/example.php">here</a>.
 </p>
 <hr>
 _WELCOME;
@@ -87,7 +93,7 @@ try {
 // form to retrieve user name if saving
 function displayForm()
 {
-document.getElementById("save_choice").innerHTML=`<form action="indexp.php" method="post" onsubmit="return validate(this)">
+document.getElementById("save_choice").innerHTML=`<form action="query.php" method="post" onsubmit="return validate(this)">
 <p>Enter a user name to save results. Can contain letters, numbers and underscores. 
 <br/>Must be between 6 and 16 characters long.<p/>  
 <table>
@@ -120,7 +126,6 @@ document.getElementById("save_choice").innerHTML=`<form action="query.php" metho
 </p>
 <p id="save_choice"></p>
 _EOP;
-
 echo <<<_TAIL1
 </body>
 </html>

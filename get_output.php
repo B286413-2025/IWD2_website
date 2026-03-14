@@ -1,7 +1,8 @@
 <?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
 
 // Script for displaying plotcon output from the database
-
+session_start();
+require_once 'set_cookies.php';
 require_once 'login.php';
 
 // Calling the script with GET parameters
@@ -14,19 +15,28 @@ if (!isset($_GET['output_id'])) {
 $output_id = (int)$_GET['output_id'];
 $download  = isset($_GET['download']) && $_GET['download'] == '1';
 
+// Checking user_hash existence
+$user_hash = $_SESSION['user_hash'] ?? '';
+if ($user_hash === '') {
+    http_response_code(500);
+    exit("Missing user_hash");
+}
+
 // MySQL connection, adapted from class code
 try {
 	$dsn = "mysql:host=127.0.0.1;dbname=$database;charset=utf8mb4";
 	$conn = new PDO($dsn, $username, $password);
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	// Getting file name and data
+	// Getting file name and data for identified user onlt
 	$stmt = $conn->prepare("
-		SELECT mime_type, file_name, blob_data
-        	FROM analysis_outputs
-        	WHERE output_id = ?
+		SELECT ao.mime_type, ao.file_name, ao.blob_data
+		FROM analysis_outputs AS ao
+		JOIN jobs ON jobs.job_id = as.job_id
+		WHERE output_id = ?
+		AND (jobs.user_hash = ? OR jobs.is_example = 1)
         	LIMIT 1
     	");
-    	$stmt->execute([$output_id]);
+    	$stmt->execute([$output_id, $user_hash]);
     	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 	// Exiting if row is empty

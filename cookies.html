@@ -1,0 +1,129 @@
+<!-- Adapted from class code -->
+<style>
+  #cookieConsent {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: #333;
+    color: white;
+    display: none;
+    z-index: 9999;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+  }
+
+  #cookieConsent.show {
+    display: block;
+  }
+
+  .cookie-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cookie-text {
+    margin-right: 20px;
+    flex-grow: 1;
+  }
+
+  .cookie-buttons {
+    flex-shrink: 0;
+  }
+
+  .cookie-button {
+    padding: 8px 20px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+
+  .cookie-button:hover {
+    opacity: 0.8;
+  }
+
+  #dismissCookies {
+    background: #4CAF50;
+    color: white;
+  }
+
+  .cookie-link {
+    color: #4CAF50;
+    text-decoration: none;
+  }
+
+  .cookie-link:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Dismissal parameters
+  const NOTIFICATION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+  // Checking for valid dismissal
+  function validDismiss() {
+    const cookieConsent = localStorage.getItem('cookieConsent');
+    if (!cookieConsent) return false;
+
+    try {
+      const consentData = JSON.parse(cookieConsent);
+
+      // Checking if dismissed
+      if (!consentData || consentData.status !== 'dismissed') return false;
+
+      // And not expired
+      const isExpired = (Date.now() - consentData.timestamp) > NOTIFICATION_DURATION;
+      if (isExpired) {
+        localStorage.removeItem('cookieConsent');
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      console.error('Error parsing cookie consent:', e);
+      localStorage.removeItem('cookieConsent');
+      return false;
+    }
+  }
+
+  // If validly dismissed, not outputting banner
+  if (validDismiss()) return;
+
+  // Create cookie consent banner
+  const cookieBanner = document.createElement('div');
+  cookieBanner.id = 'cookieConsent';
+  cookieBanner.className = 'show';
+
+  cookieBanner.innerHTML = `
+    <div class="cookie-content">
+      <div class="cookie-text">
+        This website uses essential cookies to save results and enhance your experience.
+        By continuing to visit this site, you acknowledge this notice.
+        <a href="#" class="cookie-link" onclick="return false;">Learn more</a>
+      </div>
+      <div class="cookie-buttons">
+        <button id="dismissCookies" class="cookie-button" type="button">Dismiss</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(cookieBanner);
+
+  // Dismiss handler with timestamp
+  document.getElementById('dismissCookies').addEventListener('click', function () {
+    localStorage.setItem('cookieConsent', JSON.stringify({
+      status: 'dismissed',
+      timestamp: Date.now()
+    }));
+    cookieBanner.classList.remove('show');
+  });
+});
+</script>
+

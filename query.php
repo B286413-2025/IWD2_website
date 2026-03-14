@@ -1,14 +1,7 @@
 <?php // Adapted from class code
 // Checking user name is set
 session_start();
-if(isset($_POST['user_name'])) {
-	$_SESSION['user_name'] = $_POST['user_name'];
-} else if (isset($_SESSION['user_name'])) {
-// Otherwise rerouting to get user name
-} else {
-  header('location: https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/user_name.php');
-}
-
+require_once 'set_cookies.php';
 require_once 'login.php';
 echo<<<_HEAD1
 <!doctype html>
@@ -98,7 +91,7 @@ echo <<<_FORM
   <tr>
     <td>Output format:</td>
     <td>
-	<select name="outfmt" id="outfmt" size="5">
+	<select name="clust_outfmt" id="clust_outfmt" size="5">
 	<option value="fasta" selected>FASTA</option>
 	<option value="clustal">Clustal</option>
 	<option value="msf">MSF</option>
@@ -107,7 +100,8 @@ echo <<<_FORM
 	<option value="stockholm">STOCKHOLM</option>
 	<option value="vienna">VIENNA</option>
 	</select>
-    <td/>
+    </td>
+  </tr>
 </table>
 </fieldset>
 <br/>
@@ -119,6 +113,21 @@ echo <<<_FORM
     <td>
       <input type="number" name="win_size" id="win_size" min="1" max="100" step="1" value="4">
     <td/>
+    <td></td> 
+    <td>Output format:</td>
+    <td>
+	<select name="plot_outfmt" id="plot_outfmt" size="5">
+	<option value="png" selected>png</option>
+	<option value="pdf">pdf</option>
+	<option value="svg">svg</option>
+	<option value="gif">gif</option>
+	<option value="data">data</option>
+	<option value="ps">ps</option>
+	<option value="hpgl">hpgl</option>
+	<option value="meta">meta</option>
+	</select>
+    </td>
+  </tr>
 </table>
 </fieldset>
 <br/>
