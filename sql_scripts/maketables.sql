@@ -41,6 +41,8 @@ CREATE TABLE `jobs` (
 `is_example` TINYINT(1) NOT NULL DEFAULT 0,
 `job_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `status` ENUM('pending', 'complete', 'error') DEFAULT 'pending',
+`error_message` TEXT NULL,
+`job_params` JSON NULL,
 PRIMARY KEY (`job_id`),
 FOREIGN KEY (`query_id`) REFERENCES `queries`(`query_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 INDEX (`user_hash`),

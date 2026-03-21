@@ -3,7 +3,7 @@
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
-echo<<<_HEAD1
+echo<<<_HTML
 <!doctype html>
 <html lang="en">
 <html>
@@ -14,7 +14,8 @@ echo<<<_HEAD1
 
 <body>	
 <header>
-_HEAD1;
+_HTML;
+
 include'menuf.php';
 
 echo <<<_INFO
@@ -71,7 +72,7 @@ echo <<<_FORM
 </script>
 <br/>
 <!-- form to retrieve query parameters -->
-<form action="result_page.php" method="post" onsubmit="return validate(this)">
+<form action="loading_page.php" method="post" onsubmit="return validate(this)">
 <p>Enter query parameters: taxonomic group and protein family are mandatory</p>
 <fieldset>
 <legend>Query parameters</legend>  
