@@ -51,7 +51,7 @@ try {
 	die("Could not retrieve job and query.");
 }
 
-// Making sure job not pending, otherwise directing to loading page
+// Making sure job not pending, otherwise redirecting to loading page
 if ($job['status'] === 'pending') {
 	header("Location: loading_page.php?job_id=" . (int)$jid);
 	die();
@@ -79,7 +79,7 @@ echo <<<_NAV
 <li><a href="#plotcon_res">Plotcon Results</a></li>
 <li><a href="#summary">Summary Statistics</a></li>
 <li><a href="#files">Text Files</a></li>
-<li><a href="#alignment">Alignment Overview</a></li>
+<li><a href="#alignment_ajax">Alignment Overview</a></li>
 <li><a href="#motifs">Motif Hits Overview</a></li>
 <li><a href="query.php" target="_blank">New Query</a></li>
 </ul>
@@ -94,7 +94,7 @@ echo "<h3>Query parameters</h3>";
 echo "<p><b>Protein:</b> " . htmlspecialchars((string)$job['protein_family']) . "<br>";
 echo "<b>Taxon:</b> " . htmlspecialchars((string)$job['taxon']) . "<br>";
 echo "<b>Job ID:</b> " . htmlspecialchars((string)$jid) . "</p>";
-echo "</article><hr />";
+echo "<a href='#'>Back to Top</a></article><hr />";
 
 // Checking for error
 if ($job['status'] === 'error') {
@@ -192,7 +192,7 @@ if (!$plot_rows) {
 		echo "<a href='get_output.php?output_id={$oid}&download=1'>Download requested format</a> (" . $fname . ")";
 	}
 	echo "</p>";
-	echo "</article><hr />";
+	echo "<a href='#'>Back to Top</a></article><hr />";
 }
 
 // Summary statistics
@@ -279,8 +279,8 @@ if ($aln_min !== $aln_max) {
 
 echo "<tr><th>Mean raw seq length</th><td>" . htmlspecialchars((string)number_format($mean_len, 2)) . "</td></tr>";
 echo "<tr><th>Top motif (#)</th><td>" . htmlspecialchars((string)$top_motif) . " (" . htmlspecialchars((string)$top_motif_n) . ")</td></tr>";
-echo "<tr><th>Numbe of motif types</th><td>" . htmlspecialchars($n_motif_types) . "</td></tr>";
-echo "</table></article><br><hr />";
+echo "<tr><th>Number of motif types</th><td>" . htmlspecialchars($n_motif_types) . "</td></tr>";
+echo "</table><br><a href='#'>Back to Top</a></article><hr />";
 
 // Download results
 // MSA
@@ -315,121 +315,211 @@ echo "<h4>Motif report</h4>";
 echo "<ul>";
 echo "<li><a href='download_motif_hits.php?job_id=" . (int)$jid . "'>Download motif hits</a> - TSV</li>";
 echo "</ul>";
-echo "</article><br><hr />";
+echo "</article><br><a href='#'>Back to Top</a><hr />";
 
 // Alignment overview
-// Number of aligned sequences: between 1-500, default 50
-$aln_limit = isset($_GET['aln_limit']) ? (int)$_GET['aln_limit'] : 50;
-if ($aln_limit < 1 || $aln_limit > 500) $aln_limit = 50;
+echo "<article id='alignment_ajax'>";
+echo "<h3>Alignment Overview</h3>";
 
-$aln_sort = $_GET['aln_sort'] ?? 'gaps_desc';
-$aln_order_sql = "gap_fraction DESC";
-if ($aln_sort === 'gaps_asc') $aln_order_sql = "gap_fraction ASC";
-if ($aln_sort === 'organism') $aln_order_sql = "organism ASC";
-if ($aln_sort === 'accession') $aln_order_sql = "accession ASC";
+// Alignment table, generated with ELM (GPT 5.2) help, https://elm.edina.ac.uk/elm-new
+echo <<<_ALIGNMENT
+<div>
+<div>
+<!--
+Table filtering options: # rows, sorting values, sort direction, organism name
+-->
+<div>
+	<label>Rows (max 1000)</label><br>
+	<input type='number' id='aln_limit' value='50' min='1' max='1000'>
+</div>
+<!--
+Sorting values: gap fraction, gap count, sequence length, organism, accession
+-->
+<div>
+	<label>Sort Field</label><br>
+	<select id='aln_sort'>
+	<option value='gap_fraction' selected>Gap Fraction</option>
+ 	<option value='gap_count'>Gap Count</option>
+	<option value='raw_len'>Sequence Length</option>
+	<option value='organism'>Organism</option>
+	<option value='accession'>Accession</option>
+	</select>
+</div>
+<div>
+	<label>Direction</label><br>
+	<select id='aln_dir'>
+        <option value='desc' selected>Descending</option>
+        <option value='asc'>Ascending</option>
+      	</select>
+</div>
+<div>
+	<label>Organism contains</label><br>
+	<input type='text' id='aln_organism' placeholder='(optional)'>
+</div>
+<div>
+	<label><input type='checkbox' id='show_aligned'> include aligned sequence</label>
+</div>
+<div>
+	<button type='button' id='aln_update'>Update</button>
+</div>
+</div>
+<!--
+Possible fields to include in table: organism, accession, seq length, gap count, gap fraction
+-->
+<div>
+	<b>Show fields:</b>
+	<label><input type='checkbox' class='aln_field' value='organism' checked> Organism</label>
+	<label><input type='checkbox' class='aln_field' value='accession' checked> Accession</label>
+	<label><input type='checkbox' class='aln_field' value='raw_len' checked> Sequence length</label>
+	<label><input type='checkbox' class='aln_field' value='gap_count' checked> Gap count</label>
+	<label><input type='checkbox' class='aln_field' value='gap_fraction' checked> Gap fraction</label>
+</div>
+<div id='aln_status'></div>
+<div id='aln_table_wrap'></div>
+</div>
+</article><br><a href='#'>Back to Top</a><hr />
+_ALIGNMENT;
 
-echo "<article id='alignment'>";
-echo "<h3>Alignment overview</h3>";
+// For JS variable
+$jid_js = (int)$jid;
+echo <<<_JS
+<script>
+// JavaScript function to manipulate table
+// Adapted from ELM (GPT 5.2) generated code, https://elm.edina.ac.uk/elm-new
+(function(){
+	const jobId = $jid_js;
 
-echo "<form method='get' action='results.php'>
-  <input type='hidden' name='job_id' value='" . htmlspecialchars($jid) . "'>
-  <label>Rows:</label>
-  <input type='number' name='aln_limit' min='1' max='500' value='" . htmlspecialchars($aln_limit) . "'>
-  <label>Sort:</label>
-  <select name='aln_sort'>
-    <option value='gaps_desc' " . ($aln_sort==='gaps_desc'?'selected':'') . ">Gaps (desc)</option>
-    <option value='gaps_asc' " . ($aln_sort==='gaps_asc'?'selected':'') . ">Gaps (asc)</option>
-    <option value='organism' " . ($aln_sort==='organism'?'selected':'') . ">Organism</option>
-    <option value='accession' " . ($aln_sort==='accession'?'selected':'') . ">Accession</option>
-  </select>
-  <button type='submit'>Update</button>
-</form>";
+	// Mapping field labels to a table header
+	const fieldLabels = {
+                organism: 'Organism',
+                accession: 'Accession',
+                raw_len: 'Sequence Length',
+                gap_count: 'Gap Count',
+                gap_fraction: 'Gap Fraction'
+	};
 
-$stmt = $conn->prepare("
-    SELECT
-      s.organism AS organism,
-      a.accession AS accession,
-      LENGTH(a.aligned_sequence) AS aln_len,
-      (LENGTH(a.aligned_sequence) - LENGTH(REPLACE(a.aligned_sequence, '-', ''))) AS gap_count,
-      ROUND(
-        (LENGTH(a.aligned_sequence) - LENGTH(REPLACE(a.aligned_sequence, '-', '')))
-        / NULLIF(LENGTH(a.aligned_sequence),0),
-        4
-      ) AS gap_fraction
-    FROM aligned_sequences a
-    JOIN sequences s ON s.accession = a.accession
-    WHERE a.job_id = ?
-    ORDER BY $aln_order_sql
-    LIMIT $aln_limit
-");
-$stmt->execute([(int)$jid]);
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	// Returning all checked columns
+	function selectedFields() {
+    		return Array.from(document.querySelectorAll('.aln_field:checked')).map(x => x.value);
+	}
 
-echo "<table border='1' cellpadding='6' cellspacing='0'>";
-echo "<tr><th>Organism</th><th>Accession</th><th>Aln length</th><th>Gaps</th><th>Gap fraction</th></tr>";
-foreach ($rows as $r) {
-    echo "<tr>";
-    echo "<td>" . htmlspecialchars($r['organism']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['accession']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['aln_len']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['gap_count']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['gap_fraction']) . "</td>";
-    echo "</tr>";
-}
-echo "</table>";
-echo "</article><br><hr />";
+	// Printing sequence nicely, slicing to fixed-size subsequences
+    function wrapSeq(seq, width) {
+		if (!seq) {
+			return '';
+		}
+		const w = width || 60;
+		let parts = [];
+		for (let i = 0; i < seq.length; i += w) {
+			parts.push(seq.slice(i, i + w));
+		}
+		return parts.join('\\n');
+    }
+
+	// A function to render the table based on the checked fields and selected rows
+	function renderTable(rows, fields, showAligned) {
+    		const wrap = document.getElementById('aln_table_wrap');
+			// No results
+			if (!rows || rows.length === 0) {
+				wrap.innerHTML = '<p><i>No rows to display.</i></p>';
+				return;
+			}
+
+  			// Building table with HTML syntax
+			let html = '<table border="1" cellspacing="0" cellpadding="6">';
+
+	  		// Header row, mapping fields the header cells
+  			html += '<tr>';
+  			html += fields.map(f => '<th>' + (fieldLabels[f] || f) + '</th>').join('');
+  			if (showAligned) html += '<th>Aligned Sequence</th>';
+  			html += '</tr>';
+
+  			// Table rows
+  			for (const r of rows) {
+    				html += '<tr>';
+
+    				// And cell values, with fallback
+    				for (const f of fields) {
+      					const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
+      					html += '<td>' + val + '</td>';
+    				}
+
+				// Optional fasta sequence
+				if (showAligned) {
+					// Checking for aligned sequence
+      					if (r && r['aligned_sequence']) {
+						const seqBlock = wrapSeq(String(r['aligned_sequence']), 60);
+						html += '<td><pre style="margin:0; white-space:pre;">' + seqBlock + '</pre></td>';
+       					} else {
+						html += '<td><i>(no aligned sequence)</i></td>';
+					}
+				}
+				html += '</tr>';
+  			}
+			html += '</table>';
+			wrap.innerHTML = html;
+	}
+	// async funtcion to update elements upon promises
+  	async function update() {
+    		const limit = document.getElementById('aln_limit').value;
+    		const sort = document.getElementById('aln_sort').value;
+    		const dir = document.getElementById('aln_dir').value;
+    		const org = document.getElementById('aln_organism').value.trim();
+    		const showAligned = document.getElementById('show_aligned').checked;
+    		const fields = selectedFields();
+	
+		// Output status
+    		const status = document.getElementById('aln_status');
+    		status.textContent = 'Loading...';
+	
+		// Setting the URL with the table filters
+    		const url = new URL('alignment_ajax.php', window.location.href);
+    		url.searchParams.set('job_id', jobId);
+    		url.searchParams.set('limit', limit);
+    		url.searchParams.set('sort', sort);
+		url.searchParams.set('dir', dir);
+	
+		// Checking if organism is set
+		if (org !== '') {
+			url.searchParams.set('organism_like', org);
+		}
+    		url.searchParams.set('include_aligned', showAligned ? '1' : '0');
+
+    		try {
+      			const res = await fetch(url.toString(), { cache: 'no-store' });
+      			const data = await res.json();
+		
+			// Checking data status from alignment_ajax.php
+      			if (!data.ok) {
+        			status.textContent = 'Error: ' + (data.error || 'unknown');
+        			return;
+      			}
+      			if (data.status && data.status !== 'complete') {
+        			status.textContent = 'Job status: ' + data.status;
+        			return;
+      			}
+
+      			status.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
+      			renderTable(data.rows, fields, showAligned);
+    		} catch (e) {
+      			status.textContent = 'Error fetching alignment data.';
+    		}
+	}
+	
+	// Updataing upon click
+	document.getElementById('aln_update').addEventListener('click', update);
+
+  	// Some content loading from the beginning
+  	update();
+})();
+</script>
+_JS;
 
 // Motif overview
-$mot_limit = isset($_GET['mot_limit']) ? (int)$_GET['mot_limit'] : 50;
-if ($mot_limit < 1 || $mot_limit > 500) $mot_limit = 50;
-
-$mot_sort = $_GET['mot_sort'] ?? 'motif';
-$mot_order_sql = "mh.motif_name ASC";
-if ($mot_sort === 'organism') $mot_order_sql = "s.organism ASC, mh.motif_name ASC";
-if ($mot_sort === 'start') $mot_order_sql = "mh.start_pos ASC";
-
 echo "<article id='motifs'>";
 echo "<h3>Motif hits overview</h3>";
 
-echo "<form method='get' action='results.php'>
-  <input type='hidden' name='job_id' value='" . htmlspecialchars($jid) . "'>
-  <label>Rows:</label>
-  <input type='number' name='mot_limit' min='1' max='500' value='" . htmlspecialchars($mot_limit) . "'>
-  <label>Sort:</label>
-  <select name='mot_sort'>
-    <option value='motif' " . ($mot_sort==='motif'?'selected':'') . ">Motif</option>
-    <option value='organism' " . ($mot_sort==='organism'?'selected':'') . ">Organism</option>
-    <option value='start' " . ($mot_sort==='start'?'selected':'') . ">Start position</option>
-  </select>
-  <button type='submit'>Update</button>
-</form>";
-
-$stmt = $conn->prepare("
-    SELECT s.organism, mh.accession, mh.motif_name, mh.start_pos, mh.end_pos, mh.score, mh.matched_sequence
-    FROM motif_hits mh
-    JOIN sequences s ON s.accession = mh.accession
-    WHERE mh.job_id = ?
-    ORDER BY $mot_order_sql
-    LIMIT $mot_limit
-");
-$stmt->execute([(int)$jid]);
-$mrows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-echo "<table border='1' cellpadding='6' cellspacing='0'>";
-echo "<tr><th>Organism</th><th>Accession</th><th>Motif</th><th>Start</th><th>End</th><th>Score</th><th>Matched</th></tr>";
-foreach ($mrows as $r) {
-    echo "<tr>";
-    echo "<td>" . htmlspecialchars($r['organism']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['accession']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['motif_name']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['start_pos']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['end_pos']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['score']) . "</td>";
-    echo "<td>" . htmlspecialchars($r['matched_sequence']) . "</td>";
-    echo "</tr>";
-}
-echo "</table>";
-echo "</article><br><hr />";
+echo "</article><br><a href='#'>Back to Top</a><hr />";
 
 // To submit a new query
 echo <<<_HTML3
