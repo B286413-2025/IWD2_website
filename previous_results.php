@@ -151,6 +151,7 @@ echo <<<_JS
 		}
 
 		// Table in HTML syntax
+		// TODO: perhaps only present error preview if not all are empty
 		let html = '<table border="1" cellpadding="6" cellspacing="0">';
 		// Headers
 		html += '<tr>';
@@ -159,6 +160,10 @@ echo <<<_JS
 		html += '<th>Protein</th>';
 		html += '<th>Taxon</th>';
 		html += '<th>Status</th>';
+		html += '<th>Window Size</th>';
+		html += '<th>Plot Format</th>';
+		html += '<th>MSA Format</th>';
+		html += '<th>Error Preview</th>';
 		html += '<th>Link</th>';
 		html += '</tr>';
 
@@ -183,6 +188,10 @@ echo <<<_JS
 			html += '<td>' + row.protein_family + '</td>';
 			html += '<td>' + row.taxon + '</td>';
 			html += '<td>' + row.status + '</td>';
+			html += '<td>' + (row.win_size ?? 4) + '</td>';
+			html += '<td>' + (row.plot_outfmt ?? 'png') + '</td>';
+			html += '<td>' + (row.clust_outfmt ?? 'fasta') + '</td>';
+			html += '<td>' + (row.error_preview ?? '') + '</td>';
 			html += '<td><a href="' + link + '">' + label + '</a></td>';
 			html += '</tr>';
 		}

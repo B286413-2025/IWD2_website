@@ -77,6 +77,36 @@ try {
 	$stmt = $conn->prepare($sql);	
 	$stmt->execute($params);
 	$jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	// Flattening JSON for more informative jobs table
+	foreach ($jobs as &$job) {
+		// Getting parameters
+		$params = [];
+		if (!empty($job['job_params'])) {
+			$tmp = json_decode((string)$job['job_params'], true);
+			if (is_array($tmp)) {
+				$params = $tmp;
+			}
+		}
+		
+		// Setting parameters in the associative array
+		$job['win_size'] = $params['win_size'] ?? 4;
+		$job['plot_outfmt'] = $params['plot_outfmt'] ?? 'png';
+		$job['clust_outfmt'] = $params['clust_outfmt'] ?? 'fasta';
+	
+		// Short error preview
+		if (!empty($job['error_message'])) {
+			$err = (string)$job['error_message'];
+			$job['error_preview'] = mb_substr($err, 0, 80);
+			if (mb_strlen($err) > 80) {
+				$job['error_preview'] .= '...';
+			}
+		} else {
+			$job['error_preview'] = '';
+		}
+		unset($job['job_params']); // no need to send raw JSON to browser
+	}
+	unset($job);
 
 	// Output
 	echo json_encode([
