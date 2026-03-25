@@ -261,6 +261,7 @@ $stmt->execute([(int)$jid]);
 $n_motif_types = (int)$stmt->fetchColumn();
 
 // Echoing HTML table
+// TODO: perhaps download summary statistics?
 echo "<article id='summary'>";
 echo "<h3>Summary statistics</h3>";
 echo "<table border='1' cellpadding='6' cellspacing='0'>";
@@ -357,10 +358,19 @@ Sorting values: gap fraction, gap count, sequence length, organism, accession
 	<input type='text' id='aln_organism' placeholder='(optional)'>
 </div>
 <div>
+	<label>Minimum Gap Count</label><br>
+	<input type='number' id='aln_min_gap_count' min='0' step='1' placeholder='(optional)'>
+</div>
+<div>
+	<label>Minimum Gap Fraction</label><br>
+	<input type='number' id='aln_min_gap_fraction' min='0' max='1' step='0.0001' placeholder='(optional)'>
+</div>
+<div>
 	<label><input type='checkbox' id='show_aligned'> include aligned sequence</label>
 </div>
 <div>
 	<button type='button' id='aln_update'>Update</button>
+	<a id='aln_download' href='#'>Download current table (TSV)</a>
 </div>
 </div>
 <!--
@@ -404,7 +414,7 @@ echo <<<_JS
 	}
 
 	// Printing sequence nicely, slicing to fixed-size subsequences
-    function wrapSeq(seq, width) {
+	function wrapSeq(seq, width) {
 		if (!seq) {
 			return '';
 		}
@@ -414,103 +424,124 @@ echo <<<_JS
 			parts.push(seq.slice(i, i + w));
 		}
 		return parts.join('\\n');
-    }
-
-	// A function to render the table based on the checked fields and selected rows
-	function renderTable(rows, fields, showAligned) {
-    		const wrap = document.getElementById('aln_table_wrap');
-			// No results
-			if (!rows || rows.length === 0) {
-				wrap.innerHTML = '<p><i>No rows to display.</i></p>';
-				return;
-			}
-
-  			// Building table with HTML syntax
-			let html = '<table border="1" cellspacing="0" cellpadding="6">';
-
-	  		// Header row, mapping fields the header cells
-  			html += '<tr>';
-  			html += fields.map(f => '<th>' + (fieldLabels[f] || f) + '</th>').join('');
-  			if (showAligned) html += '<th>Aligned Sequence</th>';
-  			html += '</tr>';
-
-  			// Table rows
-  			for (const r of rows) {
-    				html += '<tr>';
-
-    				// And cell values, with fallback
-    				for (const f of fields) {
-      					const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
-      					html += '<td>' + val + '</td>';
-    				}
-
-				// Optional fasta sequence
-				if (showAligned) {
-					// Checking for aligned sequence
-      					if (r && r['aligned_sequence']) {
-						const seqBlock = wrapSeq(String(r['aligned_sequence']), 60);
-						html += '<td><pre style="margin:0; white-space:pre;">' + seqBlock + '</pre></td>';
-       					} else {
-						html += '<td><i>(no aligned sequence)</i></td>';
-					}
-				}
-				html += '</tr>';
-  			}
-			html += '</table>';
-			wrap.innerHTML = html;
 	}
-	// async funtcion to update elements upon promises
-  	async function update() {
-    		const limit = document.getElementById('aln_limit').value;
-    		const sort = document.getElementById('aln_sort').value;
-    		const dir = document.getElementById('aln_dir').value;
-    		const org = document.getElementById('aln_organism').value.trim();
-    		const showAligned = document.getElementById('show_aligned').checked;
-    		const fields = selectedFields();
 	
-		// Output status
-    		const status = document.getElementById('aln_status');
-    		status.textContent = 'Loading...';
-	
-		// Setting the script URL with the table filters
-    		const url = new URL('alignment_ajax.php', window.location.href);
-    		url.searchParams.set('job_id', jobId);
-    		url.searchParams.set('limit', limit);
-    		url.searchParams.set('sort', sort);
+	// Function to build URL for table update and download
+	function buildAlignmentUrl(baseFile) {
+		// Getting field values
+		const limit = document.getElementById('aln_limit').value;
+		const sort = document.getElementById('aln_sort').value;
+		const dir = document.getElementById('aln_dir').value;
+		const org = document.getElementById('aln_organism').value.trim();
+		const minGapCount = document.getElementById('aln_min_gap_count').value.trim();
+		const minGapFraction = document.getElementById('aln_min_gap_fraction').value.trim();
+		const showAligned = document.getElementById('show_aligned').checked;
+		const fields = selectedFields();
+
+		// Building URL
+		const url = new URL(baseFile, window.location.href);
+		url.searchParams.set('job_id', jobId);
+		url.searchParams.set('limit', limit);
+		url.searchParams.set('sort', sort);
 		url.searchParams.set('dir', dir);
-	
-		// Checking if organism is set
 		if (org !== '') {
 			url.searchParams.set('organism_like', org);
 		}
-    		url.searchParams.set('include_aligned', showAligned ? '1' : '0');
+		if (minGapCount !== '') {
+			url.searchParams.set('min_gap_count', minGapCount);
+		}
+		if (minGapFraction !== '') {
+			url.searchParams.set('min_gap_fraction', minGapFraction);
+		}
 
+		url.searchParams.set('include_aligned', showAligned ? '1' : '0');
+		if (fields.length > 0) {
+			url.searchParams.set('fields', fields.join(','));
+		}
+		return url;
+	}
+
+	// A function to render the table based on the checked fields and selected rows
+	function renderTable(rows, fields, showAligned) {
+		const wrap = document.getElementById('aln_table_wrap');
+		// No results
+		if (!rows || rows.length === 0) {
+			wrap.innerHTML = '<p><i>No rows to display.</i></p>';
+			return;
+		}
+
+		// Building table with HTML syntax
+		let html = '<table border="1" cellspacing="0" cellpadding="6">';
+
+  		// Header row, mapping fields to header cells
+		html += '<tr>';
+		html += fields.map(f => '<th>' + (fieldLabels[f] || f) + '</th>').join('');
+		if (showAligned) html += '<th>Aligned Sequence</th>';
+		html += '</tr>';
+
+  		// Table rows
+  		for (const r of rows) {
+    			html += '<tr>';
+
+    			// And cell values, with fallback
+    			for (const f of fields) {
+      				const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
+      				html += '<td>' + val + '</td>';
+    			}
+
+			// Optional fasta sequence
+			if (showAligned) {
+				// Checking for aligned sequence
+      				if (r && r['aligned_sequence']) {
+					const seqBlock = wrapSeq(String(r['aligned_sequence']), 60);
+					html += '<td><pre style="margin:0; white-space:pre;">' + seqBlock + '</pre></td>';
+       				} else {
+					html += '<td><i>(no aligned sequence)</i></td>';
+				}
+			}
+			html += '</tr>';
+  		}
+		html += '</table>';
+		wrap.innerHTML = html;
+	}
+	// async funtcion to update table upon promises
+  	async function update() {
+		// Selected fields
+		const fields = selectedFields();
+		const showAligned = document.getElementById('show_aligned').checked;
+
+		// Output status
+		const status = document.getElementById('aln_status');
+		status.textContent = 'Loading...';
+
+		// Updating download link according to chosen parameters
+		document.getElementById('aln_download').href = buildAlignmentUrl('download_alignment_ajax.php').toString();
+	
 		// Trying to fetch the data
-    		try {
-      			const res = await fetch(url.toString(), { cache: 'no-store' });
-      			const data = await res.json();
+		try {
+			const url = buildAlignmentUrl('alignment_ajax.php');
+			const res = await fetch(url.toString(), { cache: 'no-store' });
+			const data = await res.json();
 		
 			// Checking data status from alignment_ajax.php
-      			if (!data.ok) {
-        			status.textContent = 'Error: ' + (data.error || 'unknown');
-        			return;
-      			}
-      			if (data.status && data.status !== 'complete') {
-        			status.textContent = 'Job status: ' + data.status;
-        			return;
-      			}
+			if (!data.ok) {
+				status.textContent = 'Error: ' + (data.error || 'unknown');
+				return;
+			}
+			if (data.status && data.status !== 'complete') {
+				status.textContent = 'Job status: ' + data.status;
+				return;
+			}
 
-      			status.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
-      			renderTable(data.rows, fields, showAligned);
-    		} catch (e) {
-      			status.textContent = 'Error fetching alignment data.';
-    		}
+			status.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
+			renderTable(data.rows, fields, showAligned);
+		} catch (e) {
+			status.textContent = 'Error fetching alignment data.';
+		}
 	}
 	
 	// Updataing upon click
 	document.getElementById('aln_update').addEventListener('click', update);
-
-  	// Some content loading from the beginning
   	update();
 })();
 </script>
@@ -561,6 +592,7 @@ Sorting values - filter columns, direction, optional filters, columns to show
 </div>
 <div>
 	<button type="button" id="mot_update">Update</button>
+	<a id="mot_download" href="#">Download current table (TSV)</a>
 </div>
 </div>
 <div>
@@ -597,10 +629,42 @@ echo <<<_MOTIFJS
 		matched_sequence: 'Matched Sequence'
 	};
 
-	// Function to return checked column options
+	// Function to return all checked column options
 	function selectedMotifFields() {
 		return Array.from(document.querySelectorAll('.mot_field:checked')).map(x => x.value);
 	}
+
+	// Function to build and return URL to for rendering and download
+	function buildMotifUrl(baseFile) {
+		// Selected parameters
+		const limit = document.getElementById('mot_limit').value;
+		const sort = document.getElementById('mot_sort').value;
+		const dir = document.getElementById('mot_dir').value;
+		const organism = document.getElementById('mot_organism').value.trim();
+		const motif = document.getElementById('mot_name').value.trim();
+		const score = document.getElementById('mot_score').value.trim();
+		const fields = selectedMotifFields();
+		
+		// Building URL
+		const url = new URL(baseFile, window.location.href);
+		url.searchParams.set('job_id', jobId);
+		url.searchParams.set('limit', limit);
+		url.searchParams.set('sort', sort);
+		url.searchParams.set('dir', dir);
+		if (organism !== '') {
+			url.searchParams.set('organism_like', organism);
+		}
+		if (motif !== '') {
+			url.searchParams.set('motif_like', motif);
+		}
+		if (score !== '') {
+			url.searchParams.set('min_score', score);
+		}
+		if (fields.length > 0) {
+			url.searchParams.set('fields', fields.join(','));
+		}
+                return url;
+        }
 	
 	// Function to render the table
 	function renderMotifTable(rows, fields) {
@@ -637,38 +701,18 @@ echo <<<_MOTIFJS
 	
 	// Asynch function to update the table upon motif promise
 	async function updateMotifs() {
-		// Getting values
-		const limit = document.getElementById('mot_limit').value;
-		const sort = document.getElementById('mot_sort').value;
-		const dir = document.getElementById('mot_dir').value;
-		const organism = document.getElementById('mot_organism').value.trim();
-		const motif = document.getElementById('mot_name').value.trim();
-		const score = document.getElementById('mot_score').value.trim();
+		// Filters and status
 		const fields = selectedMotifFields();
-
-		// Status
 		const status = document.getElementById('mot_status');
 		status.textContent = 'Loading...';
 
-		// Building the URL for motif_ajax based on selection
-		const url = new URL('motif_ajax.php', window.location.href);
-		url.searchParams.set('job_id', jobId);
-		url.searchParams.set('limit', limit);
-		url.searchParams.set('sort', sort);
-		url.searchParams.set('dir', dir);
-		// Including optional parameters
-		if (organism !== '') {
-			url.searchParams.set('organism_like', organism);
-		}
-		if (motif !== '') {
-			url.searchParams.set('motif_like', motif);
-		}
-		if (score !== '') {
-			url.searchParams.set('min_score', score);
-		}
+		// Updating download link
+		const dl = document.getElementById('mot_download');
+		dl.href = buildMotifUrl('download_motif_ajax.php').toString();
 
-		// Fetching upon promises
+		// Trying fetch upon promise
 		try {
+			const url = buildMotifUrl('motif_ajax.php');
 			const res = await fetch(url.toString(), { cache: 'no-store' });
 			const data = await res.json();
 

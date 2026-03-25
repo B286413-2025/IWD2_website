@@ -33,9 +33,22 @@ $sort = isset($_GET['sort']) ? (string)$_GET['sort'] : 'gap_fraction';
 $dir  = isset($_GET['dir']) ? strtolower((string)$_GET['dir']) : 'desc';
 $dir  = ($dir === 'asc') ? 'ASC' : 'DESC';
 
-// Organism search
+// Optional parameters
 $organism_like = isset($_GET['organism_like']) ? trim((string)$_GET['organism_like']) : '';
-if (strlen($organism_like) > 255) $organism_like = substr($organism_like, 0, 255);
+if (strlen($organism_like) > 255) {
+	$organism_like = substr($organism_like, 0, 255);
+}
+$min_gap_count = isset($_GET['min_gap_count']) && $_GET['min_gap_count'] !== '' ? (int)$_GET['min_gap_count'] : null;
+if ($min_gap_count !== null && $min_gap_count < 0) {
+	$min_gap_count = 0;
+}
+$min_gap_fraction = isset($_GET['min_gap_fraction']) && $_GET['min_gap_fraction'] !== '' ? (float)$_GET['min_gap_fraction'] : null;
+if ($min_gap_fraction !== null && $min_gap_fraction < 0) {
+	$min_gap_fraction = 0;
+}
+if ($min_gap_fraction !== null && $min_gap_fraction > 1) {
+	$min_gap_fraction = 1;
+}
 
 // Whether to include aligned_sequence
 // TODO: can be large
@@ -107,11 +120,25 @@ try {
 	// Binding jid
 	$params = [':jid' => $jid];
 
-	// Optional filtering on organism pattern
+	// Optional filtering 
 	if ($organism_like !== '') {
 		$sql .= " AND s.organism LIKE :org ";
         	$params[':org'] = '%' . $organism_like . '%';
-    }
+	}
+
+	$having = [];
+	if ($min_gap_count !== null) {
+		$having[] = "gap_count >= :min_gap_count";
+		$params[':min_gap_count'] = $min_gap_count;
+	}
+	
+	if ($min_gap_fraction !== null) {
+		$having[] = "gap_fraction >= :min_gap_fraction";
+		$params[':min_gap_fraction'] = $min_gap_fraction;
+	}
+	if (!empty($having)) {
+		$sql .= " HAVING " . implode(" AND ", $having) . " ";
+	}
 
 	// Adding order and limit params
 	$sql .= " ORDER BY $order_by $dir LIMIT $limit ";
