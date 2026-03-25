@@ -1,4 +1,5 @@
 <?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+// Script to fetch alignment data is JSON format to display on results page interactively
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
@@ -70,13 +71,13 @@ try {
 	");
 	$stmt->execute([$jid, $user_hash]);
 	$status = $stmt->fetchColumn();
-	// Updating if failure
+	// Updating if not found
 	if (!$status) {
 		http_response_code(404);
 		echo json_encode(['ok' => false, 'error' => 'Not found']);
         	die();
 	}
-	// Or complete
+	// Or not complete
 	if ($status !== 'complete') {
 		echo json_encode(['ok' => true, 'status' => $status, 'rows' => []]);
 		die();
@@ -132,4 +133,3 @@ try {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'Server error']);
 }
-?>

@@ -93,4 +93,3 @@ try {
     	http_response_code(500);
     	die("Server error");
 }
-?>

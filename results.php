@@ -80,7 +80,7 @@ echo <<<_NAV
 <li><a href="#summary">Summary Statistics</a></li>
 <li><a href="#files">Text Files</a></li>
 <li><a href="#alignment_ajax">Alignment Overview</a></li>
-<li><a href="#motifs">Motif Hits Overview</a></li>
+<li><a href="#motif_ajax">Motif Overview</a></li>
 <li><a href="query.php" target="_blank">New Query</a></li>
 </ul>
 </nav>
@@ -321,7 +321,7 @@ echo "</article><br><a href='#'>Back to Top</a><hr />";
 echo "<article id='alignment_ajax'>";
 echo "<h3>Alignment Overview</h3>";
 
-// Alignment table, generated with ELM (GPT 5.2) help, https://elm.edina.ac.uk/elm-new
+// Alignment table, adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
 echo <<<_ALIGNMENT
 <div>
 <div>
@@ -380,7 +380,7 @@ Possible fields to include in table: organism, accession, seq length, gap count,
 </article><br><a href='#'>Back to Top</a><hr />
 _ALIGNMENT;
 
-// For JS variable
+// JS for ajax functionality
 $jid_js = (int)$jid;
 echo <<<_JS
 <script>
@@ -472,7 +472,7 @@ echo <<<_JS
     		const status = document.getElementById('aln_status');
     		status.textContent = 'Loading...';
 	
-		// Setting the URL with the table filters
+		// Setting the script URL with the table filters
     		const url = new URL('alignment_ajax.php', window.location.href);
     		url.searchParams.set('job_id', jobId);
     		url.searchParams.set('limit', limit);
@@ -485,6 +485,7 @@ echo <<<_JS
 		}
     		url.searchParams.set('include_aligned', showAligned ? '1' : '0');
 
+		// Trying to fetch the data
     		try {
       			const res = await fetch(url.toString(), { cache: 'no-store' });
       			const data = await res.json();
@@ -516,10 +517,187 @@ echo <<<_JS
 _JS;
 
 // Motif overview
-echo "<article id='motifs'>";
-echo "<h3>Motif hits overview</h3>";
+// Setting table filtering options
+echo <<<_MOTIF
+<article id="motif_ajax">
+<h3>Motif Overview</h3>
+<div>
+<!--
+Sorting values - filter columns, direction, optional filters, columns to show
+-->
+<div>
+	<label>Rows (max 1000)</label><br>
+	<input type="number" id="mot_limit" value="50" min="1" max="1000">
+</div>
+<div>
+	<label>Sort Field</label><br>
+	<select id="mot_sort">
+	<option value="motif_name" selected>Motif</option>
+	<option value="organism">Organism</option>
+	<option value="accession">Accession</option>
+	<option value="start_pos">Start Position</option>
+	<option value="end_pos">End Position</option>
+	<option value="score">Score</option>
+	</select>
+</div>
+<div>
+	<label>Direction</label><br>
+	<select id="mot_dir">
+	<option value="asc" selected>Ascending</option>
+	<option value="desc">Descending</option>
+	</select>
+</div>
+<div>
+	<label>Organism contains</label><br>
+	<input type="text" id="mot_organism" placeholder="(optional)">
+</div>
+<div>
+	<label>Motif contains</label><br>
+	<input type="text" id="mot_name" placeholder="(optional)">
+</div>
+<div>
+	<label>Minimum score</label><br>
+	<input type="number" id="mot_score" step="0.01" placeholder="(optional)">
+</div>
+<div>
+	<button type="button" id="mot_update">Update</button>
+</div>
+</div>
+<div>
+	<b>Show fields:</b>
+	<label><input type="checkbox" class="mot_field" value="organism" checked> Organism</label>
+	<label><input type="checkbox" class="mot_field" value="accession" checked> Accession</label>
+	<label><input type="checkbox" class="mot_field" value="motif_name" checked> Motif</label>
+	<label><input type="checkbox" class="mot_field" value="start_pos" checked> Start</label>
+	<label><input type="checkbox" class="mot_field" value="end_pos" checked> End</label>
+	<label><input type="checkbox" class="mot_field" value="score" checked> Score</label>
+	<label><input type="checkbox" class="mot_field" value="matched_sequence"> Matched Sequence</label>
+</div>
+<div id="mot_status"></div>
+<div id="mot_table_wrap"></div>
+</article>
+<br><a href="#">Back to Top</a><hr />
+_MOTIF;
 
-echo "</article><br><a href='#'>Back to Top</a><hr />";
+// JS for ajax functionality
+echo <<<_MOTIFJS
+<script>
+// JS function to manipulate motif overview table
+// Adaptef from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+(function(){
+	const jobId = $jid_js;
+	// Mapping table column names with IDs
+	const fieldLabels = {
+		organism: 'Organism',
+		accession: 'Accession',
+		motif_name: 'Motif',
+		start_pos: 'Start',
+		end_pos: 'End',
+		score: 'Score',
+		matched_sequence: 'Matched Sequence'
+	};
+
+	// Function to return checked column options
+	function selectedMotifFields() {
+		return Array.from(document.querySelectorAll('.mot_field:checked')).map(x => x.value);
+	}
+	
+	// Function to render the table
+	function renderMotifTable(rows, fields) {
+		const wrap = document.getElementById('mot_table_wrap');
+
+		// If no results
+		if (!rows || rows.length === 0) {
+			wrap.innerHTML = '<p><i>No rows to display.</i></p>';
+			return;
+		}
+
+		// Building the table in HTML syntax based on returned results
+		let html = '<table border="1" cellspacing="0" cellpadding="6">';
+		
+		// Header row
+		html += '<tr>';
+		html += fields.map(f => '<th>' + (fieldLabels[f] || f) + '</th>').join('');
+		html += '</tr>';
+		
+		// Content rows
+		for (const r of rows) {
+			html += '<tr>';
+			// And cells
+			for (const f of fields) {
+				const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
+				html += '<td>' + val + '</td>';
+			}
+			html += '</tr>';
+		}
+
+		html += '</table>';
+		wrap.innerHTML = html;
+	}
+	
+	// Asynch function to update the table upon motif promise
+	async function updateMotifs() {
+		// Getting values
+		const limit = document.getElementById('mot_limit').value;
+		const sort = document.getElementById('mot_sort').value;
+		const dir = document.getElementById('mot_dir').value;
+		const organism = document.getElementById('mot_organism').value.trim();
+		const motif = document.getElementById('mot_name').value.trim();
+		const score = document.getElementById('mot_score').value.trim();
+		const fields = selectedMotifFields();
+
+		// Status
+		const status = document.getElementById('mot_status');
+		status.textContent = 'Loading...';
+
+		// Building the URL for motif_ajax based on selection
+		const url = new URL('motif_ajax.php', window.location.href);
+		url.searchParams.set('job_id', jobId);
+		url.searchParams.set('limit', limit);
+		url.searchParams.set('sort', sort);
+		url.searchParams.set('dir', dir);
+		// Including optional parameters
+		if (organism !== '') {
+			url.searchParams.set('organism_like', organism);
+		}
+		if (motif !== '') {
+			url.searchParams.set('motif_like', motif);
+		}
+		if (score !== '') {
+			url.searchParams.set('min_score', score);
+		}
+
+		// Fetching upon promises
+		try {
+			const res = await fetch(url.toString(), { cache: 'no-store' });
+			const data = await res.json();
+
+			// Checking data is ok
+			if (!data.ok) {
+				status.textContent = 'Error: ' + (data.error || 'unknown');
+				return;
+			}
+			// And status 
+			if (data.status && data.status !== 'complete') {
+				status.textContent = 'Job status: ' + data.status;
+				return;
+			}
+
+			// Rendering table based on content
+ 			status.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
+			renderMotifTable(data.rows, fields);
+
+		} catch (e) {
+			status.textContent = 'Error fetching motif data.';
+		}
+	}
+	
+	// Updating on click
+	document.getElementById('mot_update').addEventListener('click', updateMotifs);
+	updateMotifs();
+})();
+</script>
+_MOTIFJS;
 
 // To submit a new query
 echo <<<_HTML3
