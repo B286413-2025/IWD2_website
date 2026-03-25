@@ -23,33 +23,43 @@ try {
 	die("Database connection failed");
 }
 
-// Retrieve previous jobs for the current user
+// Retrieve information about previous jobs for the current user
 try {
-	// Looking for jobs details (id, date, status, error messages, parameters)
-	// and query details (protein and taxon)
-	// Orderng results by recency
+	// Summary counts by status
 	$stmt = $conn->prepare("
-	SELECT
-	jobs.job_id,
-	jobs.job_date,
-	jobs.status,
-	jobs.error_message,
-	jobs.job_params,
-	queries.protein_family,
-	queries.taxon
+	SELECT status, COUNT(*) AS n
 	FROM jobs
-	JOIN queries ON queries.query_id = jobs.query_id
-	WHERE jobs.user_hash = ?
-	AND jobs.is_example = 0
-	ORDER BY jobs.job_date DESC, jobs.job_id DESC
+	WHERE user_hash = ?
+	AND is_example = 0
+	GROUP BY status
 	");
 	$stmt->execute([$user_hash]);
-	$jobs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$counts_raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// Initializing an associative array
+	$counts = [
+	'total' => 0,
+	'pending' => 0,
+	'complete' => 0,
+	'error' => 0
+	];
+
+	// Going through query, counting results
+	foreach ($counts_raw as $row) {
+		$st = (string)$row['status'];
+		$n = (int)$row['n'];
+		if (isset($counts[$st])) {
+			$counts[$st] = $n;
+			$counts['total'] += $n;
+		}
+	}
+
 } catch (Throwable $e) {
 	http_response_code(500);
 	die("Could not retrieve previous jobs.");
 }
 
+// HTML infromation
 echo <<<_HTML
 <!doctype html>
 <html lang="en">
@@ -61,6 +71,7 @@ echo <<<_HTML
 _HTML;
 
 include 'menuf.php';
+
 echo <<<_HEADER
 <header>
 <h2>Previous Results</h2>
@@ -69,7 +80,7 @@ echo <<<_HEADER
 _HEADER;
 
 // Informative message if no previous results, link to query page
-if (!$jobs) {
+if ($counts['total'] == 0) {
 	echo <<<_BODY
 <p><b>No previous jobs were found for this user.</b></p>
 <p><a href='query.php'>Submit a new query</a></p>
@@ -79,65 +90,138 @@ _BODY;
     die();
 }
 
-// Table header
-echo <<<_TH
-<br>
-<table border='1' cellpadding='6' cellspacing='0'>
-<tr>
-<th>Job ID</th>
-<th>Date</th>
-<th>Protein</th>
-<th>Taxon</th>
-<th>Status</th>
-<th>plotcon Win Size</th>
-<th>MSA Download Format</th>
-<th>Link</th>
-</tr>
-_TH;
+// Summary counts
+echo "<section><h3>Summary</h3>";
+echo "<ul>";
+echo "<li>Total jobs: " . htmlspecialchars((string)($counts['total'])) . "</li>";
+echo "<li>Complete: " . htmlspecialchars(($counts['complete'])) . "</li>";
+echo "<li>Pending: " . htmlspecialchars(($counts['pending'])) . "</li>";
+echo "<li>Error: " . htmlspecialchars(($counts['error'])) . "</li>";
+echo "</ul></section><hr />";
 
-// Proessing query per row and inserting into table
-foreach ($jobs as $job) {
-	// Verifying query is not empty and an array
-	$params = [];
-	if (!empty($job['job_params'])) {
-		$tmp = json_decode((string)$job['job_params'], true);
-		if (is_array($tmp)) {
-			$params = $tmp;
+// Filters - echoing options
+echo <<<_FILTERS
+<div>
+<label>Status:</label>
+<select id='prev_status'>
+	<option value=''>All</option>
+	<option value='pending'>Pending</option>
+	<option value='complete'>Complete</option>
+	<option value='error'>Error</option>
+</select>
+<label>Search protein/taxon:</label>
+<input type='text' id='prev_search'>
+<button type='button' id='prev_update'>Update</button>
+</div>
+
+<div id='prev_status_msg' style='margin-top:10px;'></div>
+<div id='prev_results_wrap' style='margin-top:10px;'></div>
+_FILTERS;
+
+// JS functionality for dynamic filtering
+// Adapted from ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+echo <<<_JS
+<script>
+(function(){
+	// Function to build URL
+	function buildUrl() {
+		// Filtering parameters
+		const status = document.getElementById('prev_status').value;
+		const search = document.getElementById('prev_search').value.trim();
+	
+		// URL
+		const url = new URL('previous_results_ajax.php', window.location.href);
+		if (status !== '') {
+			url.searchParams.set('status', status);
+		}
+		if (search !== '') {
+			url.searchParams.set('search', search);
+		}
+		return url;
+	}
+
+	// Function to render the final table
+	function renderTable(rows) {
+		const wrap = document.getElementById('prev_results_wrap');
+
+		// No results
+ 		if (!rows || rows.length === 0) {
+			wrap.innerHTML = '<p><i>No jobs match the current filter.</i></p>';
+			return;
+		}
+
+		// Table in HTML syntax
+		let html = '<table border="1" cellpadding="6" cellspacing="0">';
+		// Headers
+		html += '<tr>';
+		html += '<th>Job ID</th>';
+		html += '<th>Date</th>';
+		html += '<th>Protein</th>';
+		html += '<th>Taxon</th>';
+		html += '<th>Status</th>';
+		html += '<th>Link</th>';
+		html += '</tr>';
+
+		// Table rows
+		for (const row of rows) {
+			// Initializing parameters
+			let link = '';
+			let label = '';
+
+			// Deciding link and label based on status
+			if (row.status === 'pending') {
+				link = 'loading_page.php?job_id=' + row.job_id;
+				label = 'Processing';
+			} else {
+				link = 'results.php?job_id=' + row.job_id;
+				label = 'View';
+			}
+
+			html += '<tr>';
+			html += '<td>' + row.job_id + '</td>';
+			html += '<td>' + row.job_date + '</td>';
+			html += '<td>' + row.protein_family + '</td>';
+			html += '<td>' + row.taxon + '</td>';
+			html += '<td>' + row.status + '</td>';
+			html += '<td><a href="' + link + '">' + label + '</a></td>';
+			html += '</tr>';
+		}
+
+		html += '</table>';
+		wrap.innerHTML = html;
+	}
+
+	// Async function to update table
+	async function updatePreviousResults() {
+		const msg = document.getElementById('prev_status_msg');
+		msg.textContent = 'Loading...';
+
+		// Trying to fetch based on promises
+		try {
+			const res = await fetch(buildUrl().toString(), { cache: 'no-store' });
+			const data = await res.json();
+
+			// Checking status
+			if (!data.ok) {
+				msg.textContent = 'Error: ' + (data.error || 'unknown');
+				return;
+			}
+
+			msg.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
+			renderTable(data.rows);
+
+		} catch (e) {
+			msg.textContent = 'Error fetching previous results.';
 		}
 	}
 
-	// Optional parameters with empty fallbacks 
-	$win_size = $params['win_size'] ?? 'fasta';
-	$clust_outfmt = $params['clust_outfmt'] ?? '4';
+	// Updating on click
+	document.getElementById('prev_update').addEventListener('click', updatePreviousResults);
+	updatePreviousResults();
+})();
+</script>
+_JS;
 
-	// Building link based on job status
-	if ($job['status'] === 'pending') {
-		$link = "loading_page.php?job_id=" . $job['job_id'];
-		$label = "Processing";
-	} else {
-		$link = "results.php?job_id=" . $job['job_id'];
-		$label = "View";
-	}
-
-	// Writing table
-	echo "<tr>";
-	echo "<td>" . htmlspecialchars((string)$job['job_id']) . "</td>";
-	echo "<td>" . htmlspecialchars((string)$job['job_date']) . "</td>";
-	echo "<td>" . htmlspecialchars((string)$job['protein_family']) . "</td>";
-	echo "<td>" . htmlspecialchars((string)$job['taxon']) . "</td>";
-	echo "<td>" . htmlspecialchars((string)$job['status']) . "</td>";
-	echo "<td>" . htmlspecialchars((string)$win_size) . "</td>";
-	echo "<td>" . htmlspecialchars((string)$clust_outfmt) . "</td>";
-	echo "<td><a href='" . htmlspecialchars($link) . "'>" . htmlspecialchars($label) . "</a></td>";
-	echo "</tr>";
-}
-
-echo <<<_EOF
-</table>
-<br />
-<p><a href='query.php'>Submit a new query</a></p>
-</body>
-</html>
-_EOF;
+echo "<p><a href='query.php'>Submit a new query</a></p>";
+echo "</body></html>";
 ?>
-
