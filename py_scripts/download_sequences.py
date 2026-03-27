@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-## Downloading example set glucose-6-phosphatase proteins from Aves (birds)
+## Downloading sequences for protein family and a taxonomic group
+## defaults: glucose-6-phosphatase proteins from Aves (birds)
 
 # Modules
 import os, sys, argparse

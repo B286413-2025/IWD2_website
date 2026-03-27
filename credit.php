@@ -122,6 +122,9 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 <li>
 <a href="https://www.youtube.com/watch?v=kPtS4vO42II" target="_blank">Dani Krossing tutorial</a> - for 404 page setup
 </li>
+<li>
+<a href="https://www.youtube.com/watch?v=zJxCq6D14eM" target="_blank">Dani Krossing tutorial</a> - for simpler URLs
+</li>
 </ul>
 </section>
 <hr />

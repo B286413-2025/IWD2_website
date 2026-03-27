@@ -141,7 +141,7 @@ try {
 
 // Script directories
 $base_dir = __DIR__;
-$download_py = $base_dir . '/py_scripts/example_set.py';
+$download_py = $base_dir . '/py_scripts/download_sequences.py';
 $msa_py = $base_dir . '/py_scripts/msa_to_sql.py';
 $motif_py = $base_dir . "/py_scripts/patmat_to_sql.py";
 

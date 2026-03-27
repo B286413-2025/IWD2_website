@@ -19,7 +19,7 @@ $debug = true;
 // Adapted from ELM (GPT 5.2) generated code, https://elm.edina.ac.uk/elm/elm
 // Script directories
 $base_dir = __DIR__;
-$download_py = $base_dir . '/py_scripts/example_set.py';
+$download_py = $base_dir . '/py_scripts/download_sequences.py';
 $msa_py  = $base_dir . '/py_scripts/msa_to_sql.py';
 
 // Example parameters
