@@ -34,8 +34,8 @@ used in the development of this website.
 </header>
 <hr />
 
-<section>
-<h2 id="class">1. Class Materials</h2>
+<section id="class">
+<h2>1. Class Materials</h2>
 <p>The following parts of the website were adapted from class code and teaching examples:</p>
 <ul>
 <li>PDO database connection patterns</li>
@@ -50,8 +50,8 @@ Course Unofficial Webpage:
 </section>
 <hr />
 
-<section>
-<h2 id="ai">2. AI Assistance</h2>
+<section id="ai">
+<h2>2. AI Assistance</h2>
 <p>
 The University of Edinburgh ELM system (based on GPT 5.2 architecture) was used to assist with
 debugging, code explanation, and some code generation during development.
@@ -82,8 +82,8 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 </section>
 <hr />
 
-<section>
-<h2 id="external">3. External Documentation and References</h2>
+<section id="external">
+<h2>3. External Documentation and References</h2>
 <ul>
 <li>
 <a href="https://www.php.net/manual/en/" target="_blank">PHP Manual</a> - used for PDO, sessions, cookies, and general PHP syntax
@@ -126,8 +126,8 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 </section>
 <hr />
 
-<section>
-<h2 id="specific">4. Specific Code References</h2>
+<section id="specific">
+<h2>4. Specific Code References</h2>
 <ul>
 <li>
 JavaScript username/query validation pattern adapted from:
@@ -147,8 +147,8 @@ Stack OverFlow discussion</a>
 </section>
 <hr />
 
-<section>
-<h2 id="software">5. Software Used</h2>
+<section id="software">
+<h2>5. Software Used</h2>
 <ul>
 <li>PHP</li>
 <li>MySQL</li>
