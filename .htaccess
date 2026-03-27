@@ -1,2 +1,15 @@
+# Rules adapted from Dani Krossing tutorial, https://www.youtube.com/watch?v=zJxCq6D14eM
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Dynamic routes first
+RewriteRule ^loading/([0-9]+)/?$ loading_page.php?job_id=$1 [L,QSA]
+RewriteRule ^results/([0-9]+)/?$ results.php?job_id=$1 [L,QSA]
+
+# Simple extensionless pages second
+RewriteRule ^([A-Za-z0-9_-]+)/?$ $1.php [L,QSA]
+
 # From Dani Krossing tutorial, https://www.youtube.com/watch?v=kPtS4vO42II
 ErrorDocument 404 /~s2883992/website/not_found.php 

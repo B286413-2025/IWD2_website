@@ -5,6 +5,9 @@ session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
 
+// Base dir for pretty URLs
+$BASE = '/~s2883992/website';
+
 // Making sure user_hash is set
 $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
@@ -94,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	// Redirecting to GET so refresh doesn’t re-submit POST
 	// adapted from: https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form
-    	header("Location: loading_page.php?job_id=" . $jid);
+    	header("Location: " . $BASE . "/loading/" . $jid);
     	die;
 }
 
@@ -126,7 +129,7 @@ if (!$job) {
 
 // Redirecting to result page if complete
 if ($job['status'] === 'complete') {
-    header("Location: results.php?job_id=" . (int)$jid);
+    header("Location: " . $BASE . "/results/" . (int)$jid);
     exit;
 }
 
@@ -154,7 +157,7 @@ echo "<p><b>Status:</b> " . $job['status'] . "</p>";
 // Pending
 if ($job['status'] === 'pending') {
     echo "<p>Processing... please wait. This page will refresh automatically.</p>";
-    echo "<p><a href='query.php'>Back to query</a></p>";
+    echo "<p><a href='" . $BASE . "/query'>Back to query</a></p>";
     echo "</body></html>";
     die;
 }
@@ -163,7 +166,7 @@ if ($job['status'] === 'pending') {
 if ($job['status'] === 'error') {
     echo "<p style='color:red'><b>An error has occurred</b></p>";
     echo "<pre>" . $job['error_message'] ?? '' . "</pre>";
-    echo "<p><a href='query.php'>Back to query</a></p>";
+    echo "<p><a href='" . $BASE . "/query'>Back to query</a></p>";
     echo "</body></html>";
     die;
 }

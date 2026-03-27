@@ -159,7 +159,7 @@ Stack OverFlow discussion</a>
 </ul>
 </section>
 <hr />
-<p><a href="front.php">Back to front page</a></p>
+<p><a href="/~s2883992/website/front">Back to front page</a></p>
 </body>
 </html>
 _BODY;

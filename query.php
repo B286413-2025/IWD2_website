@@ -4,6 +4,7 @@ session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
 echo<<<_HTML
+
 <!doctype html>
 <html lang="en">
 <html>
@@ -72,7 +73,7 @@ echo <<<_FORM
 </script>
 <br/>
 <!-- form to retrieve query parameters -->
-<form action="loading_page.php" method="post" onsubmit="return validate(this)">
+<form action="/~s2883992/website/loading_page.php" method="post" onsubmit="return validate(this)">
 <p>Enter query parameters: taxonomic group and protein family are mandatory</p>
 <fieldset>
 <legend>Query parameters</legend>  

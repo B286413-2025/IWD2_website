@@ -18,7 +18,7 @@ echo <<<_BODY
 <h1>404 - Page Not Found</h1>
 <p>Sorry, the page you requested could not be found on this website.</p>
 <p>You can use the menu options or return to the front page.</p>
-<form action="front.php" method="get">
+<form action="/~s2883992/website/front" method="get">
   <button type="submit">Front Page</button>
 </form>
 </body>

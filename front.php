@@ -41,34 +41,34 @@ echo<<<_BODY
 <h2>Your Options</h2>
 <p>
 You can view an example analysis for conservation of glucose-6-phosphatase proteins
-<br/>in birds (<i>Aves</i>) href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/example.php">here</a>.
+<br/>in birds (<i>Aves</i>) href="/~s2883992/website/example">here</a>.
 <br/>Or you can continue to the main site and submit your own query and view past results.
 </p>
 <p>View the precomputed example dataset:</p>
-<form action="example.php" method="get">
+<form action="/~s2883992/website/example" method="get">
 <button type="submit">Example Dataset</button>
 </form>
 
 <p>Submit your own protein/taxon query:</p>
-<form action="query.php" method="get">
+<form action="/~s2883992/website/query" method="get">
 <button type="submit">Submit Query</button>
 </form>
 
 <p>View analyses previously run in this browser:</p>
-<form action="previous_results.php" method="get">
+<form action="/~s2883992/website/previous_results" method="get">
 <button type="submit">Previous Results</button>
 </form>
 
 <p>Help and further information:</p>
-<form action="help.php" method="get">
+<form action="/~s2883992/website/help_page" method="get">
 <button type="submit">Help</button>
 </form>
 
-<form action="about.php" method="get">
+<form action="/~s2883992/website/about" method="get">
 <button type="submit">About</button>
 </form>
 
-<form action="credit.php" method="get">
+<form action="/~s2883992/website/credit" method="get">
 <button type="submit">Statement of Credits</button>
 </form>
 </section>

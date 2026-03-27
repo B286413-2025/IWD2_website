@@ -5,6 +5,9 @@ session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
 
+// Base dir for pretty URLs
+$BASE = '/~s2883992/website';
+
 // Verifying required parameters exist
 // User hash
 $user_hash = $_SESSION['user_hash'] ?? '';
@@ -53,7 +56,7 @@ try {
 
 // Making sure job not pending, otherwise redirecting to loading page
 if ($job['status'] === 'pending') {
-	header("Location: loading_page.php?job_id=" . (int)$jid);
+	header("Location: " . $BASE . "/loading/" . (int)$jid);
 	die();
 }
 
@@ -81,7 +84,7 @@ echo <<<_NAV
 <li><a href="#files">Text Files</a></li>
 <li><a href="#alignment_ajax">Alignment Overview</a></li>
 <li><a href="#motif_ajax">Motif Overview</a></li>
-<li><a href="query.php" target="_blank">New Query</a></li>
+<li><a href="/~s2883992/website/query" target="_blank">New Query</a></li>
 </ul>
 </nav>
 </header>
@@ -93,7 +96,7 @@ render_results_content($conn, $job, $jid);
 
 // To submit a new query
 echo <<<_HTML3
-<p id='new_query'><a href='query.php' target="_blank">New query</a></p>
+<p id='new_query'><a href='/~s2883992/website/query' target="_blank">New query</a></p>
 </body>
 </html>
 _HTML3;

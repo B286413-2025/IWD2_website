@@ -47,7 +47,7 @@ This website retrieves protein sequences for a protein family within a selected 
 <section id="query">
 <h2>How to Run a Query</h2>
 <ol>
-<li>Go to the <a href="query.php" target="_blank">query page</a>.</li>
+<li>Go to the <a href="/~s2883992/website/query" target="_blank">query page</a>.</li>
 <li>Enter a <b>taxonomic group</b> (for example: <i>Aves</i>, <i>Mammalia</i>).</li>
 <li>Enter a <b>protein name</b> (for example: glucose-6-phosphatase, ABC transporter).</li>
 <li>Optionally adjust the alignment and plot settings.</li>
@@ -128,15 +128,15 @@ You can inspect motif names, coordinates, and matches across different organisms
 <h2>Try the example dataset</h2>
 <p>
 If you want to see how the website works before submitting your own query,
-you can open the <a href="example.php">example dataset</a>.
+you can open the <a href="/~s2883992/website/example">example dataset</a>.
 </p>
 </section>
 <hr />
 
 <p>
-<a href="front.php">Front page</a> |
-<a href="query.php">Query page</a> |
-<a href="previous_results.php">Previous results </a> |
+<a href="/~s2883992/website/front">Front page</a> |
+<a href="/~s2883992/website/query">Query page</a> |
+<a href="/~s2883992/website/previous_results">Previous results </a> |
 <a href='#'>Back to Top</a>
 </p>
 

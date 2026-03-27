@@ -3,6 +3,9 @@
 
 function render_results_content(PDO $conn, array $job, int $jid): void
 {
+	// Base dir for pretty URLs
+	$BASE = '/~s2883992/website';
+
 	// Query information
 	echo "<article id='query_param'>";
 	echo "<h3>Query parameters</h3>";
@@ -15,7 +18,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	if ($job['status'] === 'error') {
 		echo "<p style='color:red'><b>An error has occurred</b> &#128533</p>";
 		echo "<pre>" . htmlspecialchars((string)($job['error_message'] ?? '')) . "</pre>";
-		echo "<p>You can try again or submit another query: <a href='query.php'>back to query page</a></p>";
+		echo "<p>You can try again or submit another query: <a href='" . $BASE . "/query'>back to query page</a></p>";
 		return;
 	}
 	// Pending block
@@ -91,7 +94,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		// Web image
 		if ($display_row) {
 			$oid = (int)$display_row['output_id'];
-			echo "<img src='get_output.php?output_id={$oid}' alt='plotcon'>";
+			echo "<img src='" . $BASE . "/get_output.php?output_id=" . $oid . "' alt='plotcon'>";
 		} else {
 			echo "<p><i>No browser-displayable plotcon image found.</i></p>";
 		}
@@ -101,14 +104,14 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		// png default
 		if ($png_row) {
 			$oid = (int)$png_row['output_id'];
-			echo "<a href='get_output.php?output_id={$oid}&download=1'>Download PNG</a>";
+			echo "<a href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download PNG</a>";
 		}
 		// Requested format if different
 		if ($req_row && $requested_fmt !== 'png') {
 			$oid = (int)$req_row['output_id'];
 			$fname = htmlspecialchars((string)($req_row['file_name'] ?? 'requested_plot'));
 			echo ($png_row ? " | " : "");
-			echo "<a href='get_output.php?output_id={$oid}&download=1'>Download requested format</a> (" . $fname . ")";
+			echo "<a href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download requested format</a> (" . $fname . ")";
 		}
 		echo "</p>";
 	}
@@ -227,7 +230,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		foreach ($msa_rows as $r) {
 			$oid = (int)$r['output_id'];
 			$fname = htmlspecialchars((string)($r['file_name'] ?? ("msa_" . $oid)));
-			echo "<li><a href='get_output.php?output_id={$oid}&download=1'>Download MSA</a> - {$fname}</li>";
+			echo "<li><a href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download MSA</a> - {$fname}</li>";
 		}
 		echo "</ul>";
 	}
@@ -235,7 +238,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	// Motifs report
 	echo "<h4>Motif report</h4>";
 	echo "<ul>";
-	echo "<li><a href='download_motif_hits.php?job_id=" . (int)$jid . "'>Download motif hits</a> - TSV</li>";
+	echo "<li><a href='" . $BASE . "/download_motif_hits.php?job_id=" . (int)$jid . "'>Download motif hits</a> - TSV</li>";
 	echo "</ul>";
 	echo "</article><br><a href='#'>Back to Top</a><hr />";
 
@@ -247,8 +250,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	echo <<<_ALIGNMENT
 	<div>
 	<div>
-	<!--
-	Table filtering options: # rows, sorting values, sort direction, organism name
+	<!-- Table filtering options: # rows, sorting values, sort direction, organism name
 	-->
 	<div>
 		<label>Rows (max 1000)</label><br>
@@ -287,9 +289,6 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		<input type='number' id='aln_min_gap_fraction' min='0' max='1' step='0.0001' placeholder='(optional)'>
 	</div>
 	<div>
-		<label><input type='checkbox' id='show_aligned'> include aligned sequence</label>
-	</div>
-	<div>
 		<button type='button' id='aln_update'>Update</button>
 		<a id='aln_download' href='#'>Download current table (TSV)</a>
 	</div>
@@ -304,6 +303,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		<label><input type='checkbox' class='aln_field' value='raw_len' checked> Sequence length</label>
 		<label><input type='checkbox' class='aln_field' value='gap_count' checked> Gap count</label>
 		<label><input type='checkbox' class='aln_field' value='gap_fraction' checked> Gap fraction</label>
+		<label><input type='checkbox' id='show_aligned'> Include aligned sequence</label>
 	</div>
 	<div id='aln_status'></div>
 	<div id='aln_table_wrap'></div>
@@ -436,11 +436,11 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			status.textContent = 'Loading...';
 
 			// Updating download link according to chosen parameters
-			document.getElementById('aln_download').href = buildAlignmentUrl('download_alignment_ajax.php').toString();
+			document.getElementById('aln_download').href = buildAlignmentUrl('/~s2883992/website/download_alignment_ajax.php').toString();
 	
 			// Trying to fetch the data
 			try {
-				const url = buildAlignmentUrl('alignment_ajax.php');
+				const url = buildAlignmentUrl('/~s2883992/website/alignment_ajax.php');
 				const res = await fetch(url.toString(), { cache: 'no-store' });
 				const data = await res.json();
 		
@@ -629,11 +629,11 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 
 			// Updating download link
 			const dl = document.getElementById('mot_download');
-			dl.href = buildMotifUrl('download_motif_ajax.php').toString();
+			dl.href = buildMotifUrl('/~s2883992/website/download_motif_ajax.php').toString();
 	
 			// Trying fetch upon promise
 			try {
-				const url = buildMotifUrl('motif_ajax.php');
+				const url = buildMotifUrl('/~s2883992/website/motif_ajax.php');
 				const res = await fetch(url.toString(), { cache: 'no-store' });
 				const data = await res.json();
 

@@ -95,7 +95,7 @@ You can review the results page, inspect the conservation plot, and download the
 <li><a href="#files">Text Files</a></li>
 <li><a href="#alignment_ajax">Alignment Overview</a></li>
 <li><a href="#motif_ajax">Motif Overview</a></li>
-<li><a href="query.php">New Query</a></li>
+<li><a href="/~s2883992/website/query">New Query</a></li>
 </ul>
 </nav>
 <hr />
@@ -106,7 +106,7 @@ require_once 'results_content.php';
 render_results_content($conn, $job, $jid);
 echo <<<_HTML3
 <hr />
-<p><a href='query.php'>Go to query page</a></p>
+<p><a href='/~s2883992/website/query'>Go to query page</a></p>
 </body>
 </html>
 _HTML3

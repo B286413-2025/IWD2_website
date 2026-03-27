@@ -83,8 +83,8 @@ _HEADER;
 if ($counts['total'] == 0) {
 	echo <<<_BODY
 <p><b>No previous jobs were found for this user.</b></p>
-<p><a href='query.php'>Submit a new query</a></p>
-<p>Or check out this <a href='example.php'>example dataset</a> for more information.</p>
+<p><a href='/~s2883992/website/query'>Submit a new query</a></p>
+<p>Or check out this <a href='/~s2883992/website/example'>example dataset</a> for more information.</p>
 </body></html>
 _BODY;
     die();
@@ -175,10 +175,10 @@ echo <<<_JS
 
 			// Deciding link and label based on status
 			if (row.status === 'pending') {
-				link = 'loading_page.php?job_id=' + row.job_id;
+				link = '/~s2883992/website/loading/' + row.job_id;
 				label = 'Processing';
 			} else {
-				link = 'results.php?job_id=' + row.job_id;
+				link = '/~s2883992/website/results/' + row.job_id;
 				label = 'View';
 			}
 
@@ -231,6 +231,6 @@ echo <<<_JS
 </script>
 _JS;
 
-echo "<p><a href='query.php'>Submit a new query</a></p>";
+echo "<p><a href='/~s2883992/website/query'>Submit a new query</a></p>";
 echo "</body></html>";
 ?>
