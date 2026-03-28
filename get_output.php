@@ -1,6 +1,8 @@
-<?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+<?php 
+// Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
 
-// Script for displaying plotcon output from the database
+// Script for displaying and downloading outputs from the database in the results page
+
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
@@ -34,32 +36,35 @@ try {
 		JOIN jobs ON jobs.job_id = ao.job_id
 		WHERE ao.output_id = ?
 		AND (jobs.user_hash = ? OR jobs.is_example = 1)
-        	LIMIT 1
-    	");
-    	$stmt->execute([$output_id, $user_hash]);
-    	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+		LIMIT 1
+		");
+	$stmt->execute([$output_id, $user_hash]);
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-	// Exiting if row is empty
-    	if (!$row) {
-        	http_response_code(404);
-        	die("Not found");
+	// Exiting if not found
+	if (!$row) {
+		http_response_code(404);
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 
 	// Checking output type
 	$output = null;
 	// blob data if exists
-    	if ($row['blob_data'] !== null) {
+	if ($row['blob_data'] !== null) {
 		$output = $row['blob_data'];
 	// else text data if exists
 	} elseif ($row['text_data'] !== null) {
 		$output = $row['text_data'];
 	// Otherwise die
-    	} else {
+	} else {
 		http_response_code(404);
-        	die("Not found");
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 
 	// Getting the correct mime type, fallback for blob
+	// TODO: kinda brittle
 	$mime = $row['mime_type'] ?: "application/octet-stream";
 	// If text data, fallback for text
 	if ($row['blob_data'] === null && $row['text_data'] !== null && !$row['mime_type']) {
@@ -69,27 +74,27 @@ try {
 	// File name for download
 	$name = $row['file_name'] ?: ("output_" . $output_id);
 
-    	// Caching
-    	$etag = '"' . sha1($output) . '"';
-    	header("ETag: $etag");
-    	header("Cache-Control: private, no-cache, must-revalidate, max-age=0");
+	// Caching
+	$etag = '"' . sha1($output) . '"';
+	header("ETag: $etag");
+	header("Cache-Control: private, no-cache, must-revalidate, max-age=0");
 
-   	if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
-        	http_response_code(304);
-        	die();
-    	}
-
-	// Header according to type (view/download) 
-    	header("Content-Type: $mime");
-    	if ($download) {
-        	header("Content-Disposition: attachment; filename=\"" . addslashes($name) . "\"");
-    	} else {
-        	header("Content-Disposition: inline; filename=\"" . addslashes($name) . "\"");
+	if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
+		http_response_code(304);
+		die();
 	}
 
-    	echo $output;
+	// Header according to type (view/download) 
+	header("Content-Type: $mime");
+	if ($download) {
+		header("Content-Disposition: attachment; filename=\"" . addslashes($name) . "\"");
+	} else {
+	header("Content-Disposition: inline; filename=\"" . addslashes($name) . "\"");
+	}
+
+	echo $output;
 
 } catch (Throwable $e) {
-    	http_response_code(500);
-    	die("Server error");
+	http_response_code(500);
+	die("Server error");
 }

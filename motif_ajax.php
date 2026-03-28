@@ -1,4 +1,5 @@
-<?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+<?php 
+// Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
 // Script to retrieve motif data from SQL to results page in JSON for interactive query
 session_start();
 require_once 'set_cookies.php';
@@ -22,7 +23,7 @@ if ($jid <= 0) {
 	die();
 }
 
-// Table filters
+// Getting table filters, with deault fallback
 // Size
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
 if ($limit < 1) {
@@ -32,21 +33,28 @@ if ($limit > 1000) {
 	$limit = 1000;
 }
 
-// Sorting + direction
+// Sorting parameter and direction
 $sort = isset($_GET['sort']) ? (string)$_GET['sort'] : 'motif_name';
-$dir  = isset($_GET['dir']) ? strtolower((string)$_GET['dir']) : 'asc';
-$dir  = ($dir === 'desc') ? 'DESC' : 'ASC';
+$dir = isset($_GET['dir']) ? strtolower((string)$_GET['dir']) : 'asc';
+$dir = ($dir === 'desc') ? 'DESC' : 'ASC';
 
-// Options
+// Optional parameters
+// Organism pattern
 $organism_like = isset($_GET['organism_like']) ? trim((string)$_GET['organism_like']) : '';
-if (strlen($organism_like) > 255) $organism_like = substr($organism_like, 0, 255);
+if (strlen($organism_like) > 255) {
+	$organism_like = substr($organism_like, 0, 255);
+}
 
+// Motif pattern
 $motif_like = isset($_GET['motif_like']) ? trim((string)$_GET['motif_like']) : '';
-if (strlen($motif_like) > 255) $motif_like = substr($motif_like, 0, 255);
+if (strlen($motif_like) > 255) {
+	$motif_like = substr($motif_like, 0, 255);
+}
 
+// Minimum score
 $min_score = isset($_GET['min_score']) && $_GET['min_score'] !== '' ? (float)$_GET['min_score'] : null;
 
-// SQL sorting map
+// SQL sorting map for query
 $sort_map = [
 	'organism' => 's.organism',
 	'accession' => 'mh.accession',
@@ -127,6 +135,7 @@ try {
 		$params[':score'] = $min_score;
 	}
 
+	// Ordering
 	$sql .= " ORDER BY $order_by $dir LIMIT $limit ";
 
 	$stmt = $conn->prepare($sql);

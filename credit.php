@@ -1,4 +1,6 @@
 <?php
+// Statement of credits
+// Detailing external resources used and AI asisstance
 session_start();
 require_once 'set_cookies.php';
 
@@ -8,32 +10,41 @@ echo <<<_HTML
 <head>
 <meta charset="UTF-8" />
 <title>Statement of Credits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 </head>
 <body>
 _HTML;
 
+include 'cookies.html';
 include 'menuf.php';
 
-echo <<<_BODY
-<header>
-<h1>Statement of Credits</h1>
-<p>
-This page documents the sources of code, documentation, software, and AI assistance
-used in the development of this website.
-</p>
-<h2>Navigation Menu</h2>
-<nav aria-label="primary-navigation">
+// Sticky left menu, infromed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+echo <<<_LAYOUT
+<div class="page-shell">
+<aside class="page-side-nav">
+<h2>On this Page</h2>
 <ul>
-<li><a href="#class">Class Material</a></li>
+<li><a href="#class">Class Materials</a></li>
 <li><a href="#ai">AI Assistance</a></li>
 <li><a href="#external">External Documentation and References</a></li>
 <li><a href="#specific">Specific Code References</a></li>
 <li><a href="#software">Software Used</a></li>
+<li><a href="#">Back to Top</a></li>
 </ul>
-</nav>
+</aside>
+<main class="page-main">
+<header class="page-title" id="intro">
+<h1>Statement of Credits</h1>
+<p>
+Details of the main sources of code, documentation, software, and AI assistance
+used during development of the website.
+</p>
 </header>
 <hr />
+_LAYOUT;
 
+echo <<<_BODY
 <section id="class">
 <h2>1. Class Materials</h2>
 <p>The following parts of the website were adapted from class code and teaching examples:</p>
@@ -71,6 +82,7 @@ debugging, code explanation, and some code generation during development.
 <li>Image output storage and handling in MySQL</li>
 <li>AJAX table rendering</li>
 <li>Cookie-based user identification</li>
+<li>CSS inital script and refinement</li>
 </ul>
 </ul>
 
@@ -90,6 +102,9 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 </li>
 <li>
 <a href="https://dev.mysql.com/doc/refman/8.4/en/" target="_blank">MySQL Manual</a> - used for SQL syntax
+</li>
+<li>
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank">Mozilla HTML Guide</a> - used for HTML syntax
 </li>
 <li>
 <a href="https://biopython.org/" target="_blank">Biopython Documentation</a> - used for sequence retrieval and parsing with Entrez / SeqIO
@@ -117,6 +132,9 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 <a href="https://stackoverflow.com/questions" target="_blank">Stack Overflow discussions</a> - for specific coding questions (indicated in-script)
 </li>
 <li>
+<a href="https://www.w3schools.com/">W3 Schools</a> - for PHP, CSS, SQL and HTML examples and ideas
+</li>
+<li>
 <a href="https://www.youtube.com/watch?v=kUMe1FH4CHE" target="_blank">freeCodeCamp HTML tutorial</a> - for basic HTML ideas
 </li>
 <li>
@@ -124,6 +142,9 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 </li>
 <li>
 <a href="https://www.youtube.com/watch?v=zJxCq6D14eM" target="_blank">Dani Krossing tutorial</a> - for simpler URLs
+</li>
+<li>
+<a href="https://app.chartdb.io/" target="_blank">ChartDB</a> - to generate the website schema diagram
 </li>
 </ul>
 </section>
@@ -133,7 +154,7 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 <h2>4. Specific Code References</h2>
 <ul>
 <li>
-JavaScript username/query validation pattern adapted from:
+JavaScript query validation pattern adapted from:
 <a href="https://www.geeksforgeeks.org/javascript/username-validation-in-js-regex/" target="_blank">GeeksforGeeks username validation example</a>
 </li>
 <li>
@@ -142,9 +163,19 @@ Temporary table upsert strategy informed by:
 Stack Overflow discussion</a>
 </li>
 <li>
+Background processing while presenting loading page informed by: 
+<a href="https://stackoverflow.com/questions/4626860/how-can-i-run-a-php-script-in-the-background-after-a-form-is-submitted" target="_blank">
+Stack OverFlow discussion</a>
+</li>
+<li>
 Loading page automatic refresh strategy informed by: 
 <a href="https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form" target="_blank">
 Stack OverFlow discussion</a>
+</li>
+<li>
+Fixed main menu informed by: 
+<a href="https://www.w3schools.com/howto/howto_css_fixed_menu.asp" target="_blank">
+W3 Schools entry</a>
 </li>
 </ul>
 </section>
@@ -162,7 +193,7 @@ Stack OverFlow discussion</a>
 </ul>
 </section>
 <hr />
-<p><a href="/~s2883992/website/front">Back to front page</a></p>
+</main>
 </body>
 </html>
 _BODY;

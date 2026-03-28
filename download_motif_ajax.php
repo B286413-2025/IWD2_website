@@ -1,24 +1,27 @@
-<?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+<?php 
+// Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+// Script to download the AJAX motif table (echoing to file instead of JSON transmission)
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
 
-// Check user
+// Checking required parameters
+// User-hash
 $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
 
-// Check job id
+// jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
 if ($jid <= 0) {
 	http_response_code(400);
 	die("Missing job_id");
 }
 
-// Table filters
-// Limits
+// Table filters, with default fallback
+// Size
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
 if ($limit < 1) {
 	$limit = 50;
@@ -27,22 +30,25 @@ if ($limit > 1000) {
 	$limit = 1000;
 }
 
-// Sorting + direction
+// Sorting and direction
 $sort = isset($_GET['sort']) ? (string)$_GET['sort'] : 'motif_name';
 $dir = isset($_GET['dir']) ? strtolower((string)$_GET['dir']) : 'asc';
 $dir = ($dir === 'desc') ? 'DESC' : 'ASC';
 
 // Optional parameters
+// Organism pattern
 $organism_like = isset($_GET['organism_like']) ? trim((string)$_GET['organism_like']) : '';
 if (strlen($organism_like) > 255) {
 	$organism_like = substr($organism_like, 0, 255);
 }
 
+// Motif name pattern
 $motif_like = isset($_GET['motif_like']) ? trim((string)$_GET['motif_like']) : '';
 if (strlen($motif_like) > 255) {
 	$motif_like = substr($motif_like, 0, 255);
 }
 
+// Minimal score
 $min_score = isset($_GET['min_score']) && $_GET['min_score'] !== '' ? (float)$_GET['min_score'] : null;
 
 // Mapping names for SQL
@@ -66,7 +72,7 @@ if ($field_list !== '') {
 		if (isset($allowed_fields[$f])) {
 			$fields[] = $f;
 		}
-    }
+	}
 }
 
 if (!$fields) {
@@ -105,7 +111,8 @@ try {
 	// Failing if not found
 	if (!$status) {
 		http_response_code(404);
-		die("Not found");
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 	
 	// Or complete
@@ -151,13 +158,13 @@ try {
 	$stmt = $conn->prepare($sql);
 	$stmt->execute($params);
 
-	// File and HTTP header
+	// File name and HTTP header
 	$fname = "motif_view_job_" . $jid . ".tsv";
 	header("Content-Type: text/tab-separated-values; charset=utf-8");
 	header("Content-Disposition: attachment; filename=\"" . addslashes($fname) . "\"");
 	header("Cache-Control: private, no-store");
 
-	// File header
+	// File header row
 	echo implode("\t", $fields) . "\n";
 
 	// Query content

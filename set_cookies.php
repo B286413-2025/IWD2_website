@@ -18,12 +18,11 @@ if (empty($_COOKIE[$uid_cookie])) {
                 // HTTPS and no JS
                 'secure'   => $is_https,
                 'httponly' => true
-        ]);
+	]);
 
-    // Updating $_COOKIE within request for hashing
-    $_COOKIE[$uid_cookie] = $token;
+	// Updating $_COOKIE within request for hashing
+	$_COOKIE[$uid_cookie] = $token;
 }
 
 // Hashing cookie for MySQL
 $_SESSION['user_hash'] = hash('sha256', $_COOKIE[$uid_cookie]);
-?>

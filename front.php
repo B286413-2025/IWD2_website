@@ -1,21 +1,28 @@
-<?php // Adapted from class code
+<?php 
+// Adapted from class code
+// Home page with general information
+
 session_start();
 require_once 'set_cookies.php';
-echo<<<_HEAD1
+echo<<<_HTML
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>Protein conservation analysis</title>
-_HEAD1;
-
-// Including cookies banner
-include 'cookies.html';
-
-echo<<<_BODY
 </head>
 <body>
-<header>
+_HTML;
+
+// Including cookies banner and menu
+include 'cookies.html';
+include 'menuf.php';
+
+echo<<<_BODY
+<main class="page-main">
+<header class="page-title">
 <h1>Protein Conservation Analysis</h1>
 <h2>Welcome to my website for protein conservation!</h2>
 <p>In this site you can look at the conservation levels of a protein family from a certain taxonomic group.
@@ -41,8 +48,7 @@ echo<<<_BODY
 <h2>Your Options</h2>
 <p>
 You can view an example analysis for conservation of glucose-6-phosphatase proteins
-<br/>in birds (<i>Aves</i>) href="/~s2883992/website/example">here</a>.
-<br/>Or you can continue to the main site and submit your own query and view past results.
+<br/>in birds (<i>Aves</i>), or you can continue to the main site and submit your own query and view past results.
 </p>
 <p>View the precomputed example dataset:</p>
 <form action="/~s2883992/website/example" method="get">
@@ -73,6 +79,7 @@ You can view an example analysis for conservation of glucose-6-phosphatase prote
 </form>
 </section>
 <hr>
+<main>
 </body>
 </html>
 _BODY;

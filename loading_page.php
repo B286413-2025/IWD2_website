@@ -16,11 +16,12 @@ if ($user_hash === '') {
 
 // MySQL connection, adapted from class code
 try {
-        $dsn = "mysql:host=127.0.0.1;dbname=$database;charset=utf8mb4";
+	$dsn = "mysql:host=127.0.0.1;dbname=$database;charset=utf8mb4";
 	$conn = new PDO($dsn, $username, $password, 
 		array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 } catch(PDOException $e) {
-        die("<br/><br/><b><font color=\"red\">Connection failed</font></b>:<br/>" . $e->getMessage());
+	http_response_code(500);
+	die("The site is temporarily unavailable. Please try again later.");
 }
 
 // If directed from query, using POST
@@ -34,10 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 	// Verifying variables
 	if ($taxon === '' || strlen($taxon) < 2) {
-    		die("Invalid taxon");
+		die("Invalid taxon");
 	}
 	if ($prot_fam === '' || strlen($prot_fam) < 2) {
-    		die("Invalid protein family");
+		die("Invalid protein family");
 	}
 	// Checking custom variables with strict comparisons, setting defaults if unreasonable
 	if ($win_size < 1 || $win_size > 100) {
@@ -55,30 +56,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	// Upserting query row
 	$stmt = $conn->prepare("
 	INSERT INTO queries (protein_family, taxon)
-        VALUES (?, ?)
-        ON DUPLICATE KEY UPDATE query_date = CURRENT_TIMESTAMP
+	VALUES (?, ?)
+	ON DUPLICATE KEY UPDATE query_date = CURRENT_TIMESTAMP
 	");
 	$stmt->execute([$prot_fam, $taxon]);
+
 	// Retrieving qid
-	$qid = (int)$conn->lastInsertId();
+	$stmt = $conn->prepare("
+	SELECT query_id
+	FROM queries
+	WHERE protein_family = ? AND taxon = ?
+	LIMIT 1
+	");
+	$stmt->execute([$prot_fam, $taxon]);
+	$qid = (int)$stmt->fetchColumn();
+
+	// Stopping if no qid
 	if ($qid <= 0) {
 		die("Failed to get query_id");
 	}
 
 	// Creating pending job and storing requested parameters as JSON
 	$job_params = [
-        'taxon' => $taxon,
-        'prot_fam' => $prot_fam,
-        'clust_outfmt' => $clust_outfmt,
-        'plot_outfmt' => $plot_outfmt,
-        'win_size' => $win_size
+	'taxon' => $taxon,
+	'prot_fam' => $prot_fam,
+	'clust_outfmt' => $clust_outfmt,
+	'plot_outfmt' => $plot_outfmt,
+	'win_size' => $win_size
 	];
 
 	$stmt = $conn->prepare("
-        INSERT INTO jobs (user_hash, query_id, is_example, status, job_params)
-        VALUES (?, ?, 0, 'pending', ?)
+	INSERT INTO jobs (user_hash, query_id, is_example, status, job_params)
+	VALUES (?, ?, 0, 'pending', ?)
 	");
-    	$stmt->execute([$user_hash, $qid, json_encode($job_params, JSON_UNESCAPED_SLASHES)]);
+	$stmt->execute([$user_hash, $qid, json_encode($job_params, JSON_UNESCAPED_SLASHES)]);
 	// Retrieving jid
 	$jid = (int)$conn->lastInsertId();
 	if ($jid <= 0) {
@@ -88,49 +99,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	// Processing query in the background
 	// Adapted from: https://stackoverflow.com/questions/4626860/how-can-i-run-a-php-script-in-the-background-after-a-form-is-submitted
 	$process_query = __DIR__ . "/process_query.php";
-    	$log = sys_get_temp_dir() . "/bioapp_job_" . $jid . ".log";
-
-    	$cmd = "/usr/local/bin/php " . escapeshellarg($process_query) . " " . escapeshellarg($jid)
-         . " > " . escapeshellarg($log) . " 2>&1 &";
-    	exec($cmd);
+	$log = sys_get_temp_dir() . "/bioapp_job_" . $jid . ".log";
+	
+	$cmd = "/usr/local/bin/php " . escapeshellarg($process_query) . " " . escapeshellarg($jid)
+	. " > " . escapeshellarg($log) . " 2>&1 &";
+	exec($cmd);
 
 
 	// Redirecting to GET so refresh doesn’t re-submit POST
-	// adapted from: https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form
-    	header("Location: " . $BASE . "/loading/" . $jid);
-    	die;
+	// Adapted from: https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form
+	header("Location: " . $BASE . "/loading/" . $jid);
+	die;
 }
 
 // Processing query
-
-
 // If showing past results or after page reload, using GET
 // Checking for jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
 if ($jid <= 0) {
-    http_response_code(400);
-    die("Missing job_id");
+	http_response_code(400);
+	die("Missing job_id");
 }
 
 // Retrieving process metadata based on cookies / example
 $stmt = $conn->prepare("
-    SELECT status, error_message FROM jobs
-    WHERE jobs.job_id = ?
-    AND (user_hash = ? OR is_example = 1)
-    LIMIT 1
-");
+	SELECT job_id, status, error_message, job_params,
+	queries.protein_family, queries.taxon
+	FROM jobs
+	JOIN queries ON queries.query_id = jobs.query_id
+	WHERE jobs.job_id = ?
+	AND (jobs.user_hash = ? OR jobs.is_example = 1)
+	LIMIT 1
+	");
 $stmt->execute([$jid, $user_hash]);
 $job = $stmt->fetch(PDO::FETCH_ASSOC);
 // Checking for results
 if (!$job) {
-    http_response_code(404);
-    die("Not found");
+	http_response_code(404);
+	require __DIR__ . '/not_found.php';
+	die();
 }
 
 // Redirecting to result page if complete
 if ($job['status'] === 'complete') {
-    header("Location: " . $BASE . "/results/" . (int)$jid);
-    exit;
+	header("Location: " . $BASE . "/results/" . (int)$jid);
+	die();
+}
+
+// Decode params for display
+$params = [];
+if (!empty($job['job_params'])) {
+	$tmp = json_decode((string)$job['job_params'], true);
+	if (is_array($tmp)) {
+		$params = $tmp;
+	}
 }
 
 echo<<<_HTML
@@ -138,40 +160,76 @@ echo<<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Result page</title>
-</head>
-<body>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
+<title>Processing Query</title>
 _HTML;
 
 // Checking if job is pending, refreshing every 3 seconds
 if ($job['status'] === 'pending') {
-    echo "<meta http-equiv='refresh' content='3'>";
+	echo "<meta http-equiv='refresh' content='3'>";
 }
 
+echo "</head><body>";
+
+include 'cookies.html';
 include 'menuf.php';
 
-echo "<h2>Job " . $jid . "</h2>";
-echo "<p><b>Status:</b> " . $job['status'] . "</p>";
+echo <<<_BODY
+<main class="query-shell">
+<section class="form-panel">
+<h1>Processing Query</h1>
+_BODY;
 
 // Adding informative messages based on status, stopping execution after it
-// Pending
+// Pending view
 if ($job['status'] === 'pending') {
-    echo "<p>Processing... please wait. This page will refresh automatically.</p>";
-    echo "<p><a href='" . $BASE . "/query'>Back to query</a></p>";
-    echo "</body></html>";
-    die;
+	echo "<p><b>Status:</b> Processing...</p>";
+	echo "<p>Your analysis is currently running. This page refreshes automatically every 3 seconds.</p>";
+
+	// Displaying table with query details
+	echo "<table class='form-table'>";
+	echo "<tr><td><b>Job ID:</b></td><td>" . htmlspecialchars((string)$jid) . "</td></tr>";
+	echo "<tr><td><b>Protein family:</b></td><td>" . htmlspecialchars((string)$job['protein_family']) . "</td></tr>";
+	echo "<tr><td><b>Taxon:</b></td><td>" . htmlspecialchars((string)$job['taxon']) . "</td></tr>";
+
+	// Optional parameters
+	if (!empty($params['clust_outfmt'])) {
+		echo "<tr><td><b>ClustalO format:</b></td><td>" . htmlspecialchars((string)$params['clust_outfmt']) . "</td></tr>";
+	}
+
+	if (!empty($params['plot_outfmt'])) {
+		echo "<tr><td><b>Plotcon format:</b></td><td>" . htmlspecialchars((string)$params['plot_outfmt']) . "</td></tr>";
+	}
+
+	if (!empty($params['win_size'])) {
+		echo "<tr><td><b>Plotcon window size:</b></td><td>" . htmlspecialchars((string)$params['win_size']) . "</td></tr>";
+	}
+	
+	echo "</table>";
+
+	// Another informative message
+	echo "<p>You can <a href='" . $BASE . "/query'>submit another query</a> while this one is processing.</p>";
+	echo "</section></main></body></html>";
+	die;
 }
 
-// Error
+// Error view
 if ($job['status'] === 'error') {
-    echo "<p style='color:red'><b>An error has occurred</b></p>";
-    echo "<pre>" . $job['error_message'] ?? '' . "</pre>";
-    echo "<p><a href='" . $BASE . "/query'>Back to query</a></p>";
-    echo "</body></html>";
-    die;
+	echo "<p style='color:red'><b>Status:</b> Error</p>";
+	echo "<p>Your query could not be completed.</p>";
+	echo "<pre>" . htmlspecialchars($job['error_message'] ?? '') . "</pre>";
+	echo "<p><a href='" . $BASE . "/query'>Back to query page</a></p>";
+	echo "</section></main></body></html>";
+	die;
 }
 
+// Fallback
 echo <<<_HTML
+<p>Unknown status.</p>
+<p><a href='" . $BASE . "/query'>Back to query page</a></p>
+</section>
+</main>
 </body>
 </html>
 _HTML;

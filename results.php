@@ -1,4 +1,5 @@
-<?php // Adapted from class code, debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+<?php 
+// Adapted from class code, debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 // Code to display results page based on job ID
 
 session_start();
@@ -44,10 +45,11 @@ try {
 	");
 	$stmt->execute([$jid, $user_hash]);
 	$job = $stmt->fetch(PDO::FETCH_ASSOC);
-	// Making sure job is not empty
+	// Making sure job is not empty, outputing 404 if is
 	if (!$job) { 
-		http_response_code(404); 
-		die("Not found"); 
+		http_response_code(404);
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 } catch (Throwable $e) {
 	http_response_code(500);
@@ -65,38 +67,43 @@ echo <<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>Results</title>
 </head>
 <body>
 _HTML;
 
+include 'cookies.html';
 include 'menuf.php';
 
-// Navigation menu
+// Sticky navigation menu on the left
 echo <<<_NAV
-<header>
-<h2>Results</h2>
-<nav aria-label="primary-navigation">
+<div class="page-shell">
+<aside class="page-side-nav">
+<h2>On this Page</h2>
 <ul>
 <li><a href="#query_param">Query Parameters</a></li>
 <li><a href="#plotcon_res">Plotcon Results</a></li>
 <li><a href="#summary">Summary Statistics</a></li>
-<li><a href="#files">Text Files</a></li>
+<li><a href="#files">Downloads</a></li>
 <li><a href="#alignment_ajax">Alignment Overview</a></li>
 <li><a href="#motif_ajax">Motif Overview</a></li>
-<li><a href="/~s2883992/website/query" target="_blank">New Query</a></li>
+<li><a href="#">Back to Top</a></li>
 </ul>
-</nav>
+</aside>
+<main class="page-main">
+<header class="page-title">
+<h1>Results</h1>
 </header>
 <hr />
 _NAV;
 
+// Rendering results using the rendering script
 require_once 'results_content.php';
 render_results_content($conn, $job, $jid);
 
-// To submit a new query
 echo <<<_HTML3
-<p id='new_query'><a href='/~s2883992/website/query' target="_blank">New query</a></p>
+</div>
 </body>
 </html>
 _HTML3;

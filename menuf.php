@@ -1,48 +1,44 @@
-<?php // Setting menu options, adapted from class code
-echo <<<_MENU1
-    <table width ="70%" border="0" cellspacing="0" align="center"> <tr>
-   <td bgcolor="#DCEFFE"><div align="center">
+<?php 
+// Setting global menu options for the website, adapted from class code
 
-<!-- query submit form -->
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/query"> Submit a query </a>
-    </div></td>
-   <td bgcolor="#DCEFFE"><div align="center">
+// Base url
+$BASE = '/~s2883992/website';
 
-<!-- example dataset analysis -->
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/example"> Example dataset </a>
-    </div></td>
+// Getting current page and marking the active one in the menu
+$uri = $_SERVER['REQUEST_URI'] ?? '';
 
-   <td bgcolor="#DCEFFE"><div align="center">
-   <td bgcolor="#DCEFFE"><div align="center">
+// Function to check active page
+// Taking string URI and path, returning 'active' if active, empty string if not
+function menu_active($uri, $path) {
+	// Checking if path is substring of URI
+	$active = (strpos($uri, $path) !== false) ? 'active' : '';
+	return $active;
+}
+$frontClass = menu_active($uri, '/front');
+$queryClass = menu_active($uri, '/query') ;
+$exampleClass = menu_active($uri, '/example');
+$previousClass = menu_active($uri, '/previous_results'); 
+$helpClass = menu_active($uri, '/help'); 
+$aboutClass = menu_active($uri, '/about'); 
+$creditClass = menu_active($uri, '/credit'); 
 
-<!-- previous results page -->
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/previous_results"> Previous results </a>
-    </div></td>
-   <td bgcolor="#DCEFFE"><div align="center">
-   <td bgcolor="#DCEFFE"><div align="center">
-
-<!-- help page -->
-   <td bgcolor="#DCEFFE"><div align="center">
-   <td bgcolor="#DCEFFE"><div align="center">
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/help_page"> Help </a>
-    </div></td>
-
-<!--  about page -->
-   <td bgcolor="#DCEFFE"><div align="center">
-   <td bgcolor="#DCEFFE"><div align="center">
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/about"> About </a>
-    </div></td>
-
-<!-- statment of credit page -->
-   <td bgcolor="#DCEFFE"><div align="center">
-   <td bgcolor="#DCEFFE"><div align="center">
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/credit"> Statement of credit </a>
-    </div></td>
-   <td bgcolor="#DCEFFE"><div align="center">
-
-<!-- exit page -->
-    <a href="https://bioinfmsc8.bio.ed.ac.uk/~s2883992/website/exit"> Exit </a>
-    </div></td>
-    </tr></table>
-_MENU1;
+// Echoing menu, adjusting CSS in accordance
+echo <<<HTML
+<nav class="site-nav" aria-label="Main site navigation">
+<div class="site-nav-inner">
+<div class="site-brand">
+<a href="$BASE/front">Protein Conservation Analysis</a>
+</div>
+<ul class="site-nav-list">
+<li><a class="$frontClass" href="$BASE/front">Home</a></li>
+<li><a class="$queryClass" href="$BASE/query">Query</a></li>
+<li><a class="$exampleClass" href="$BASE/example">Example</a></li>
+<li><a class="$previousClass" href="$BASE/previous_results">Previous Results</a></li>
+<li><a class="$helpClass" href="$BASE/help_page">Help</a></li>
+<li><a class="$aboutClass" href="$BASE/about">About</a></li>
+<li><a class="$creditClass" href="$BASE/credit">Credits</a></li>
+</ul>
+</div>
+</nav>
+HTML;
 ?>

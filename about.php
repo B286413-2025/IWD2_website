@@ -1,4 +1,5 @@
 <?php
+// About page, with more technical details about the site flow
 session_start();
 require_once 'set_cookies.php';
 $BASE = '/~s2883992/website';
@@ -8,40 +9,47 @@ echo <<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>About</title>
 </head>
 <body>
 _HTML;
 
+include 'cookies.html';
 include 'menuf.php';
 
-echo <<<_BODY
-<header>
-<h1>About This Website</h1>
-<p>
-This page gives a developer-oriented overview of how the website is structured,
-which tools are used, and how the database supports the analysis workflow.
-</p>
-
-<h2>Navigation Menu</h2>
-<nav aria-label="primary-navigation">
+// Sticky left navigation menu, informed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+echo <<<_NAV
+<div class="page-shell">
+<aside class="page-side-nav">
+<h2>On this Page</h2>
 <ul>
 <li><a href="#purpose">Overall Purpose</a></li>
 <li><a href="#workflow">Main Workflow</a></li>
 <li><a href="#pages">Main Pages</a></li>
-<li><a href="#background_scripts">Background and Processing Scripts</a></li>
-<li><a href="#py_scripts">Python and Analysis Scripts</a></li>
+<li><a href="#scripts">Background Scripts</a></li>
+<li><a href="#python_tools">Python and Analysis Scripts</a></li>
 <li><a href="#database">Database Overview</a></li>
 <li><a href="#tools">Tools Used</a></li>
-<li><a href="#security">Data Security</a></li>
+<li><a href="#security">Security and Access Model</a></li>
 <li><a href="#url">URL Structure</a></li>
 <li><a href="#limitations">Current Limitations</a></li>
+<li><a href="#">Back to Top</a></li>
 </ul>
-</nav>
-
+</aside>
+<main class="page-main">
+<header class="page-title" id="intro">
+<h1>About This Website</h1>
+<p>
+A more developer-oriented overview of how the website is structured,
+which tools are used, and how the database supports the analysis workflow.
+</p>
 </header>
 <hr />
+_NAV;
 
+echo <<<_BODY
 <section id="purpose">
 <h2>1. Overall Purpose</h2>
 <p>
@@ -49,7 +57,6 @@ This website retrieves protein sequence datasets for a selected protein family a
 runs a small bioinformatics analysis pipeline, stores the results in MySQL, and presents them back to the user.
 </p>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="workflow">
@@ -71,7 +78,6 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <li>The results page retrieves the stored outputs and summary statistics.</li>
 </ol>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="pages">
@@ -89,11 +95,10 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <li><b>not_found.php</b> - custom 404 page</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="background_scripts">
-<h2>4. Background and Processing Scripts</h2>
+<h2>4. Background Scripts</h2>
 <ul>
 <li><b>set_cookies.php</b> - creates and hashes the site cookie used for browser-level job ownership</li>
 <li><b>process_query.php</b> - CLI worker that processes a job by job ID</li>
@@ -105,7 +110,6 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <li><b>download_motif_hits.php</b> - exports total motif hits report as TSV</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="py_scripts">
@@ -116,7 +120,6 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <li><b>patmat_to_sql.py</b> - runs patmatmotifs and writes motif hits to a TSV suitable for SQL loading</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="database">
@@ -161,7 +164,6 @@ The full SQL script used to generate the database, which includes indexing and u
 <a href="https://github.com/algra2001/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">my personal GitHub repository</a>.
 </p>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="tools">
@@ -177,7 +179,6 @@ The full SQL script used to generate the database, which includes indexing and u
 <li>EMBOSS patmatmotifs</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="security">
@@ -188,7 +189,6 @@ Jobs are associated with a browser through a cookie-derived hash stored in the d
 <br />Example jobs are separately marked and may be accessed without matching the user hash.
 </p>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="url">
@@ -198,7 +198,6 @@ The website uses rewritten URLs through <code>.htaccess</code> so that pages can
 instead of explicit <code>.php</code> filenames in the visible URL.
 </p>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="limitations">
@@ -210,15 +209,8 @@ instead of explicit <code>.php</code> filenames in the visible URL.
 <li>The user interface and CSS styling are still being refined.</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
-
-<p>
-<a href="front">Front Page</a> |
-<a href="query">Query Page</a> |
-<a href="help">Help</a>
-</p>
-
+</main>
 </body>
 </html>
 _BODY;

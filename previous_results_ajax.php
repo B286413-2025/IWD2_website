@@ -1,5 +1,5 @@
-<?php // Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
-
+<?php 
+// Adapted from ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 // Previous results ajax addition page - allows filtering
 
 session_start();
@@ -42,9 +42,9 @@ try {
 	SELECT
 	jobs.job_id,
 	jobs.job_date,
-	jobs.status,
-	jobs.error_message,
-	jobs.job_params,
+	jobs.status, " .
+//	jobs.error_message,
+	"jobs.job_params,
 	queries.protein_family,
 	queries.taxon
 	FROM jobs
@@ -95,16 +95,17 @@ try {
 		$job['clust_outfmt'] = $params['clust_outfmt'] ?? 'fasta';
 	
 		// Short error preview
-		if (!empty($job['error_message'])) {
-			$err = (string)$job['error_message'];
-			$job['error_preview'] = mb_substr($err, 0, 80);
-			if (mb_strlen($err) > 80) {
-				$job['error_preview'] .= '...';
-			}
-		} else {
-			$job['error_preview'] = '';
-		}
-		unset($job['job_params']); // no need to send raw JSON to browser
+//		if (!empty($job['error_message'])) {
+//			$err = (string)$job['error_message'];
+//			$job['error_preview'] = substr($err, 0, 20);
+//			if (strlen($err) > 20) {
+//				$job['error_preview'] .= '...';
+//			}
+//		} else {
+//			$job['error_preview'] = '';
+//		}
+		// No need to send raw JSON
+		unset($job['job_params']);
 	}
 	unset($job);
 
@@ -116,5 +117,5 @@ try {
 
 } catch (Throwable $e) {
 	http_response_code(500);
-	die("Could not retrieve previous jobs.");
+	die("Could not retrieve previous jobs: " .  htmlspecialchars($e->getMessage()));
 }

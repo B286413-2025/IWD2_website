@@ -1,4 +1,5 @@
-<?php // Debugged using ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+<?php 
+// Debugged using ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 // Example set page
 // Providing information about the example data set results and interpretation
 
@@ -34,8 +35,11 @@ try {
 	$job = $stmt->fetch(PDO::FETCH_ASSOC);
 
 	// Checking if exists
+	// (Really bad if doesn't...)
 	if (!$job) {
-		die("No example dataset found.");
+		http_response_code(404);
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 
 	$jid = (int)$job['job_id'];
@@ -50,22 +54,46 @@ echo <<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>Example Dataset</title>
 </head>
 <body>
 _HTML;
 
+include 'cookies.html';
 include 'menuf.php';
 
-echo <<<_HTML2
-<header>
-<h2>Example Dataset</h2>
-<p>This website includes a precomputed example analysis using 
+// Sticky left menu, infromed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+echo <<<_NAV
+<div class="page-shell">
+<aside class="page-side-nav">
+<h2>On this Page</h2>
+<ul>
+<li><a href="#process">Process Outline</a></li>
+<li><a href="#outline">Results Outline</a></li>
+<li><a href="#query_param">Query Parameters</a></li>
+<li><a href="#plotcon_res">Plotcon Results</a></li>
+<li><a href="#summary">Summary Statistics</a></li>
+<li><a href="#files">Downloads</a></li>
+<li><a href="#alignment_ajax">Alignment Overview</a></li>
+<li><a href="#motif_ajax">Motif Overview</a></li>
+<li><a href="/~s2883992/website/query">Run Your Own Query</a></li>
+<li><a href="#">Back to Top</a>
+</ul>
+</aside>
+<main class="page-main">
+<header class="page-title">
+<h1>Example Dataset</h1>
+<p>A precomputed example analysis using 
 <b>glucose-6-phosphatase</b> proteins from <i>Aves</i> (birds).</p>
-</header><hr />
+</header>
+<hr />
+_NAV;
 
-<section>
-<h3>Process Outline</h3>
+echo <<<_HTML2
+<section id="process">
+<h2>Process Outline</h2>
 <ul>
 <li>A multiple sequence alignment of the retrieved proteins using <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a></li>
 <li>A <a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">plotcon</a> conservation plot showing how sequence conservation changes along the alignment</li>
@@ -73,8 +101,8 @@ echo <<<_HTML2
 </ul>
 </section><hr />
 
-<section>
-<h3>Results Outline</h3>
+<section id="outline">
+<h2>Results Outline</h2>
 <p>This example is intended as a quick demonstration of the website output before you run your own query.
 You can review the results page, inspect the conservation plot, and download the available outputs.</p>
 <p>The results contain:</p>
@@ -85,28 +113,14 @@ You can review the results page, inspect the conservation plot, and download the
 <li><b>Alignment and motif overview tables</b> that can be filtered and downloaded</li>
 </ul>
 </section> <hr />
-
-<h3>Navigation Menu</h3>
-<nav aria-label="primary-navigation">
-<ul>
-<li><a href="#query_param">Query Parameters</a></li>
-<li><a href="#plotcon_res">Plotcon Results</a></li>
-<li><a href="#summary">Summary Statistics</a></li>
-<li><a href="#files">Text Files</a></li>
-<li><a href="#alignment_ajax">Alignment Overview</a></li>
-<li><a href="#motif_ajax">Motif Overview</a></li>
-<li><a href="/~s2883992/website/query">New Query</a></li>
-</ul>
-</nav>
-<hr />
 _HTML2;
 
-// Making sure example exists
+// Inserting the example results page
 require_once 'results_content.php';
 render_results_content($conn, $job, $jid);
 echo <<<_HTML3
 <hr />
-<p><a href='/~s2883992/website/query'>Go to query page</a></p>
+</main>
 </body>
 </html>
 _HTML3

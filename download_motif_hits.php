@@ -1,4 +1,5 @@
-<?php // Debugged using ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+<?php 
+// Debugged using ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 // Script to generate motif tsv report for download
 session_start();
 require_once 'set_cookies.php';
@@ -27,21 +28,22 @@ try {
 	// Verifying user-job
 	$stmt = $conn->prepare("
 	SELECT job_id
-        FROM jobs
-        WHERE job_id = ?
-        AND (user_hash = ? OR is_example = 1)
-        LIMIT 1
+	FROM jobs
+	WHERE job_id = ?
+	AND (user_hash = ? OR is_example = 1)
+	LIMIT 1
 	");
 	$stmt->execute([$jid, $user_hash]);
 	$check = $stmt->fetchColumn();
 	// Exit if not found, 
 	if (!$check) {
 		http_response_code(404);
-		die("Not found");
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 
 	// Retrieving motif information for report
-    	$stmt = $conn->prepare("
+	$stmt = $conn->prepare("
 	SELECT
 	sequences.organism,
 	mh.accession,
@@ -51,9 +53,9 @@ try {
 	mh.score,
 	mh.matched_sequence
 	FROM motif_hits AS mh
-        JOIN sequences ON sequences.accession = mh.accession
-        WHERE mh.job_id = ?
-        ORDER BY mh.motif_name, sequences.organism, mh.accession, mh.start_pos
+	JOIN sequences ON sequences.accession = mh.accession
+	WHERE mh.job_id = ?
+	ORDER BY mh.motif_name, sequences.organism, mh.accession, mh.start_pos
 	");
 	$stmt->execute([$jid]);
 
@@ -82,4 +84,4 @@ try {
 	http_response_code(500);
 	die("Server error");
 }
-?>
+

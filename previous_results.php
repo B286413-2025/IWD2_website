@@ -1,5 +1,5 @@
-<?php // Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
-
+<?php 
+// Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 // Previous results page - list jobs belonging to current user
 
 session_start();
@@ -65,17 +65,21 @@ echo <<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>Previous Results</title>
 </head>
 <body>
 _HTML;
 
+include 'cookies.html';
 include 'menuf.php';
 
 echo <<<_HEADER
-<header>
-<h2>Previous Results</h2>
-<p>This page lists previous analyses associated with your browser on this website.</p>
+<main class='history-shell'>
+<header class='page-title'>
+<h1>Previous Results</h1>
+<p>A list of Previous analyses associated with your browser on this website.</p>
 </header><hr />
 _HEADER;
 
@@ -91,7 +95,7 @@ _BODY;
 }
 
 // Summary counts
-echo "<section><h3>Summary</h3>";
+echo "<section><h2>Summary</h2>";
 echo "<ul>";
 echo "<li>Total jobs: " . htmlspecialchars((string)($counts['total'])) . "</li>";
 echo "<li>Complete: " . htmlspecialchars(($counts['complete'])) . "</li>";
@@ -99,23 +103,27 @@ echo "<li>Pending: " . htmlspecialchars(($counts['pending'])) . "</li>";
 echo "<li>Error: " . htmlspecialchars(($counts['error'])) . "</li>";
 echo "</ul></section><hr />";
 
-// Filters - echoing options
+// Filters - displaying options
 echo <<<_FILTERS
 <div>
 <label>Status:</label>
+<!-- Search by job type -->
 <select id='prev_status'>
 	<option value=''>All</option>
 	<option value='pending'>Pending</option>
 	<option value='complete'>Complete</option>
 	<option value='error'>Error</option>
 </select>
+<!-- Or by protein/taxon pattern -->
 <label>Search protein/taxon:</label>
 <input type='text' id='prev_search'>
 <button type='button' id='prev_update'>Update</button>
 </div>
 
-<div id='prev_status_msg' style='margin-top:10px;'></div>
-<div id='prev_results_wrap' style='margin-top:10px;'></div>
+<div id='prev_status_msg' class="ajax-status"></div>
+<div class="previous-table-wrap">
+<div id="prev_results_wrap"></div>
+</div>
 _FILTERS;
 
 // JS functionality for dynamic filtering
@@ -129,7 +137,7 @@ echo <<<_JS
 		const status = document.getElementById('prev_status').value;
 		const search = document.getElementById('prev_search').value.trim();
 	
-		// URL
+		// URL based on filter parameters
 		const url = new URL('previous_results_ajax.php', window.location.href);
 		if (status !== '') {
 			url.searchParams.set('status', status);
@@ -144,15 +152,15 @@ echo <<<_JS
 	function renderTable(rows) {
 		const wrap = document.getElementById('prev_results_wrap');
 
-		// No results
- 		if (!rows || rows.length === 0) {
+		// No results reponse
+		if (!rows || rows.length === 0) {
 			wrap.innerHTML = '<p><i>No jobs match the current filter.</i></p>';
 			return;
 		}
 
 		// Table in HTML syntax
 		// TODO: perhaps only present error preview if not all are empty
-		let html = '<table border="1" cellpadding="6" cellspacing="0">';
+		let html = '<table class="previous-table">';
 		// Headers
 		html += '<tr>';
 		html += '<th>Job ID</th>';
@@ -163,8 +171,8 @@ echo <<<_JS
 		html += '<th>Window Size</th>';
 		html += '<th>Plot Format</th>';
 		html += '<th>MSA Format</th>';
-		html += '<th>Error Preview</th>';
 		html += '<th>Link</th>';
+//		html += '<th>Error Preview</th>';
 		html += '</tr>';
 
 		// Table rows
@@ -181,7 +189,8 @@ echo <<<_JS
 				link = '/~s2883992/website/results/' + row.job_id;
 				label = 'View';
 			}
-
+			
+			// Adding table data
 			html += '<tr>';
 			html += '<td>' + row.job_id + '</td>';
 			html += '<td>' + row.job_date + '</td>';
@@ -191,8 +200,8 @@ echo <<<_JS
 			html += '<td>' + (row.win_size ?? 4) + '</td>';
 			html += '<td>' + (row.plot_outfmt ?? 'png') + '</td>';
 			html += '<td>' + (row.clust_outfmt ?? 'fasta') + '</td>';
-			html += '<td>' + (row.error_preview ?? '') + '</td>';
 			html += '<td><a href="' + link + '">' + label + '</a></td>';
+//			html += '<td>' + (row.error_preview ?? '') + '</td>';
 			html += '</tr>';
 		}
 
@@ -205,7 +214,7 @@ echo <<<_JS
 		const msg = document.getElementById('prev_status_msg');
 		msg.textContent = 'Loading...';
 
-		// Trying to fetch based on promises
+		// Trying to fetch
 		try {
 			const res = await fetch(buildUrl().toString(), { cache: 'no-store' });
 			const data = await res.json();
@@ -231,6 +240,5 @@ echo <<<_JS
 </script>
 _JS;
 
-echo "<p><a href='/~s2883992/website/query'>Submit a new query</a></p>";
 echo "</body></html>";
 ?>

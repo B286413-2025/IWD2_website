@@ -1,24 +1,28 @@
-<?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+<?php 
+// Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
+// Script to download table results manipulated by AJAX (echoing to file instead of returning JSON)
+
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
 
-// Check user
+// Checking required parameters
+// User hash
 $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
 
-// Check job id
+// jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
 if ($jid <= 0) {
 	http_response_code(400);
 	die("Missing job_id");
 }
 
-// Filter parameters
-// limits
+// Filter parameters with default fallback
+// Size
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
 if ($limit < 1) {
 	$limit = 50;
@@ -33,15 +37,19 @@ $dir  = isset($_GET['dir']) ? strtolower((string)$_GET['dir']) : 'desc';
 $dir  = ($dir === 'asc') ? 'ASC' : 'DESC';
 
 // Optional filters
+// Organism pattern
 $organism_like = isset($_GET['organism_like']) ? trim((string)$_GET['organism_like']) : '';
 if (strlen($organism_like) > 255) {
 	$organism_like = substr($organism_like, 0, 255);
 }
 
+// Minimal gap count
 $min_gap_count = isset($_GET['min_gap_count']) && $_GET['min_gap_count'] !== '' ? (int)$_GET['min_gap_count'] : null;
 if ($min_gap_count !== null && $min_gap_count < 0) {
 	$min_gap_count = 0;
 }
+
+// Minimal gap fraction
 $min_gap_fraction = isset($_GET['min_gap_fraction']) && $_GET['min_gap_fraction'] !== '' ? (float)$_GET['min_gap_fraction'] : null;
 if ($min_gap_fraction !== null && $min_gap_fraction < 0) {
 	$min_gap_fraction = 0;
@@ -50,9 +58,10 @@ if ($min_gap_fraction !== null && $min_gap_fraction > 1) {
 	$min_gap_fraction = 1;
 }
 
+// Include aligned sequences
 $include_aligned = isset($_GET['include_aligned']) && $_GET['include_aligned'] === '1';
 
-// Mapping chosen fields to SQL query parameters
+// Mapping chosen fields to SQL query select parameters
 $allowed_fields = [
 	'organism' => 's.organism AS organism',
 	'accession' => 'a.accession AS accession',
@@ -61,7 +70,7 @@ $allowed_fields = [
 	'gap_fraction' => 'ROUND((LENGTH(a.aligned_sequence) - LENGTH(REPLACE(a.aligned_sequence, "-", ""))) / NULLIF(LENGTH(a.aligned_sequence),0), 4) AS gap_fraction'
 ];
 
-// Mapping fields to headings
+// Mapping fields to headings for nice file headers
 $field_labels = [
 	'organism' => 'Organism',
 	'accession' => 'Accession',
@@ -86,7 +95,7 @@ if (!$fields) {
 	$fields = ['organism', 'accession', 'raw_len', 'gap_count', 'gap_fraction'];
 }
 
-// SQL sorting map
+// SQL sorting map to decide which column to sort on
 $sort_map = [
 	'accession' => 'a.accession',
 	'organism' => 's.organism',
@@ -117,7 +126,8 @@ try {
 	// Stopping if not found
 	if (!$status) {
 		http_response_code(404);
-		die("Not found");
+		require __DIR__ . '/not_found.php';
+		die();
 	}
 	
 	// Or not complete
@@ -139,7 +149,7 @@ try {
 	SELECT
 	$select_sql
 	FROM aligned_sequences AS a
- 	JOIN sequences AS s ON s.accession = a.accession
+	JOIN sequences AS s ON s.accession = a.accession
 	WHERE a.job_id = :jid
 	";
 	
@@ -172,19 +182,18 @@ try {
 	$stmt = $conn->prepare($sql);
 	$stmt->execute($params);
 
-	// Output TSV
+	// Output TSV, filename and HTTP header
 	$fname = "alignment_view_job_" . $jid . ".tsv";
 	header("Content-Type: text/tab-separated-values; charset=utf-8");
 	header("Content-Disposition: attachment; filename=\"" . addslashes($fname) . "\"");
 	header("Cache-Control: private, no-store");
 
-	// Header row
+	// File header row
 	$header_fields = $fields;
 	// Optional parameters
 	if ($include_aligned) {
 		$header_fields[] = 'aligned_sequence';
 	}
-
 	$header_names = [];
 	foreach ($header_fields as $f) {
 		// Setting header names, fallback to param name
@@ -196,12 +205,14 @@ try {
 	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		$out = [];
 		foreach ($header_fields as $f) {
+			// Empty fallback
 			$v = (string)($row[$f] ?? '');
 			$v = str_replace(["\t", "\r", "\n"], " ", $v);
 			$out[] = $v;
 		}
 		echo implode("\t", $out) . "\n";
 	}
+
 } catch (Throwable $e) {
 	http_response_code(500);
 	die("Server error");

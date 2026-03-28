@@ -1,4 +1,5 @@
 <?php
+// Help page explaining what the website can do
 session_start();
 require_once 'set_cookies.php';
 
@@ -7,35 +8,45 @@ echo <<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>Help</title>
 </head>
 <body>
 _HTML;
 
+include 'cookies.html';
 include 'menuf.php';
 
-echo <<<_BODY
-<header>
-<h1>Help</h1>
-<p>
-This page explains how to use the website and how to interpret the main outputs.
-</p>
-
-<h2>Navigation Menu</h2>
-<nav aria-label="primary-navigation">
+// Sticky left navigation menu
+// Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+echo <<<_NAV
+<div class="page-shell">
+<aside class="page-side-nav">
+<h2>On this Page</h2>
 <ul>
+<li><a href="#intro">Introduction</a></li>
 <li><a href="#function">What Can This Website Do?</a></li>
 <li><a href="#query">How to Run a Query</a></li>
 <li><a href="#outputs">Main Outputs</a></li>
 <li><a href="#interpretation">How to Interpret the Outputs</a></li>
-<li><a href="#general">Things to Keep In Mind</a></li>
-<li><a href="#example">Try the Example Dataset</a></li>
+<li><a href="#general">Things to Keep in Mind</a></li>
+<li><a href="#example">Example Dataset</a></li>
+<li><a href="#">Back to Top</a></li>
 </ul>
-</nav>
+</aside>
 
+<main class="page-main">
+<header class="page-title" id="intro">
+<h1>Help</h1>
+<p>
+Explanation on how to use the website and how to interpret the main outputs.
+</p>
 </header>
 <hr />
+_NAV;
 
+echo <<<_BODY
 <section id="function">
 <h2>What Can This Website Do?</h2>
 <p>
@@ -54,7 +65,6 @@ This website retrieves protein sequences for a protein family within a selected 
 <li>Submit the query and wait for the results page.</li>
 </ol>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="outputs">
@@ -95,7 +105,6 @@ The motif overview section lists PROSITE motifs detected in the selected protein
 You can inspect motif names, coordinates, and matches across different organisms.
 </p>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="interpretation">
@@ -108,7 +117,6 @@ You can inspect motif names, coordinates, and matches across different organisms
 <li><b>Differences in motif content</b> may reflect evolutionary divergence or annotation differences.</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="general">
@@ -121,7 +129,6 @@ You can inspect motif names, coordinates, and matches across different organisms
 <li>Some jobs may fail if too few sequences are found for a meaningful alignment.</li>
 </ul>
 </section>
-<a href='#'>Back to Top</a>
 <hr />
 
 <section id="example">
@@ -132,14 +139,7 @@ you can open the <a href="/~s2883992/website/example">example dataset</a>.
 </p>
 </section>
 <hr />
-
-<p>
-<a href="/~s2883992/website/front">Front page</a> |
-<a href="/~s2883992/website/query">Query page</a> |
-<a href="/~s2883992/website/previous_results">Previous results </a> |
-<a href='#'>Back to Top</a>
-</p>
-
+</main>
 </body>
 </html>
 _BODY;
