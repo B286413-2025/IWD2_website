@@ -19,7 +19,7 @@ if ($jid <= 0) {
 
 // Functions
 // Function for system call, returning exit code
-// Taking command and an array for output
+// Taking as arguments command and an array for output
 function run_cmd($cmd, &$out_lines) {
 	exec($cmd . " 2>&1", $out_lines, $rc);
 	return $rc;
@@ -80,7 +80,7 @@ try {
 	$conn = new PDO($dsn, $username, $password, 
 		array(PDO::MYSQL_ATTR_LOCAL_INFILE => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 } catch(PDOException $e) {
-        die("<br/><br/><b><font color=\"red\">Connection failed</font></b>:<br/>" . $e->getMessage());
+        die("Connetion failed: " . $e->getMessage());
 }
 
 // Trying to get parameters from jobs and queries table
@@ -100,7 +100,7 @@ try {
 		die(1);
 	}
 
-	// Avoid double-processing if already processed
+	// Avoiding double-processing if already processed
 	if ($job['status'] !== 'pending') {
 		die(0);
 	}
@@ -117,22 +117,59 @@ try {
 		}
 	}
 
-	// Using parameters if present, otherwise fall-back
+	// Using existing parameters, otherwise fall-back
 	$taxon = $params['taxon'] ?? $job['taxon'];
 	$prot_fam = $params['prot_fam'] ?? $job['protein_family'];
 	$win_size = isset($params['win_size']) ? (int)$params['win_size'] : 4;
 	$plot_outfmt = strtolower((string)($params['plot_outfmt'] ?? 'png'));
 	$clust_outfmt = strtolower((string)($params['clust_outfmt'] ?? 'fasta'));
 
+	// Sequence filtering defaults
+	$retmax = isset($params['retmax']) ? (int)$params['retmax'] : 1000;
+	$minlen = isset($params['minlen']) ? (int)$params['minlen'] : 50;
+	$maxlen = isset($params['maxlen']) ? (int)$params['maxlen'] : 2000;
+	$max_x_frac = isset($params['max_x_frac']) ? (float)$params['max_x_frac'] : 0.05;
+	$max_total_aa = isset($params['max_total_aa']) ? (int)$params['max_total_aa'] : 200000;
+	$max_kept = isset($params['max_kept']) ? (int)$params['max_kept'] : 500;
+
 	// Verifying parameters
 	if ($win_size < 1 || $win_size > 100) $win_size = 4;
+	
 	$allowed_plot = ['png','pdf','svg','gif','data','ps','hpgl','meta'];
 	if (!in_array($plot_outfmt, $allowed_plot, true)) {
 		$plot_outfmt = 'png';
 	}
+	
 	$allowed_clust = ['fasta','clustal','msf','phylip','selex','stockholm','vienna'];
 	if (!in_array($clust_outfmt, $allowed_clust, true)) {
 		$clust_outfmt = 'fasta';
+	}
+
+	if ($retmax < 1) {
+		$retmax = 1000;
+	}
+
+	if ($minlen < 0) {
+		$minlen = 0;
+	}
+	if ($maxlen < $minlen) {
+		$maxlen = 2000;
+	}
+
+	if ($max_x_frac < 0) {
+		$max_x_frac = 0.;
+	}
+
+	if ($max_x_frac > 1) {
+		$max_x_frac = 1.0;
+	}
+
+	if ($max_total_aa < 1) {
+		$max_total_aa = 200000;
+	}
+
+	if ($max_kept < 2) {
+		$max_kept = 500;
 	}
 
 } catch (Throwable $e) {
@@ -149,8 +186,8 @@ $motif_py = $base_dir . "/py_scripts/patmat_to_sql.py";
 // Based on ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm/elm
 $workdir = sys_get_temp_dir() . "/bioapp_" . $jid . "_" . bin2hex(random_bytes(4)); // Creating a unique temporary working directory per session
 if (!mkdir($workdir, 0700, true)) {
-	$err = error_get_last();
-	die("Failed to create working directory.");
+$err = error_get_last();
+die("Failed to create working directory.");
 }
 
 // Sequence output directories
@@ -162,30 +199,92 @@ $seq_fa = $workdir . "/example_record.fasta";
 $download_cmd = 'python3 ' . escapeshellarg($download_py) 
 	. ' --protein ' . escapeshellarg($prot_fam) 
 	. ' --taxon ' . escapeshellarg($taxon) 
-	. ' --outdir '  . escapeshellarg($workdir);
+	. ' --outdir '  . escapeshellarg($workdir)
+	. ' --retmax ' . escapeshellarg((string)$retmax)
+	. ' --minlen ' . escapeshellarg((string)$minlen)
+	. ' --maxlen ' . escapeshellarg((string)$maxlen)
+	. ' --max_x_frac ' . escapeshellarg((string)$max_x_frac)
+	. ' --max_total_aa ' . escapeshellarg((string)$max_total_aa)
+	. ' --max_kept ' . escapeshellarg((string)$max_kept);
+
 $download_out=[];
 $download_rc = run_cmd($download_cmd, $download_out);
 
 // Stopping if exit code is not zero or if files don't exist
-if ($download_rc !== 0 || !file_exists($seq_tsv) || !file_exists($seq_fa)) {
+if ($download_rc !== 0) {
 	job_error($conn, $jid, "Download failed:\n" . implode("\n", $download_out));
 }
 
-// Parsing result print from py script - searching for the first numeric line
+// Parsing result print from py script
 $match_num = 0;
+$raw_match_num = null;
+$total_aa_kept = null;
+
 foreach ($download_out as $line) {
 	$line = trim($line);
-	if ($line !== '' && is_numeric($line)) { 
-		$match_num = (int)$line; 
-		break;
+	// Skip if line is empty
+	if ($line === '') {
+		continue;
+	}
+
+	// The first numeric line is the usable sequence count
+	if ($match_num === 0 && is_numeric($line)) {
+		$match_num = (int)$line;
+		continue;
+	}
+
+	// Checking for other output based on str pattern
+	if (str_starts_with($line, 'NCBI matches:')) {
+		// Getting the integer only
+		$raw_match_num = (int)trim(substr($line, strlen('NCBI matches:')));
+		continue;
+	}
+
+	if (str_starts_with($line, 'Total amino acids kept:')) {
+		// Getting the integer only
+		$total_aa_kept = (int)trim(substr($line, strlen('Total amino acids kept:')));
+		continue;
 	}
 }
 
-// Stopping execuation for 1 or less sequences.
+// Stopping execuation for under two usable sequences
 if ($match_num < 2) {
-	job_error($conn, $jid, "Less than 2 sequences found for this query.");
+job_error($conn, $jid, "Less than 2 sequences found for this query.");
 }
-// TODO: What to do with >1000?
+
+// Making sure the files exist
+if (!file_exists($seq_tsv) || !file_exists($seq_fa)) {
+	job_error($conn, $jid, "Download finished but output files were not created.");
+}
+// Storing filter metadata and observed counts in job_params
+try {
+// Filters
+$params['retmax'] = $retmax;
+$params['minlen'] = $minlen;
+$params['maxlen'] = $maxlen;
+$params['max_x_frac'] = $max_x_frac;
+$params['max_total_aa'] = $max_total_aa;
+$params['max_kept'] = $max_kept;
+
+// Returned results
+$params['kept_num'] = $match_num;
+
+// Calculating filtered out sequences
+if ($raw_match_num !== null) {
+	$params['raw_match_num'] = $raw_match_num;
+	$params['filtered_out_num'] = max(0, $raw_match_num - $match_num);
+}
+
+if ($total_aa_kept !== null) {
+	$params['total_aa_kept'] = $total_aa_kept;
+}
+
+// Updating jobs
+$stmt = $conn->prepare("UPDATE jobs SET job_params=? WHERE job_id=?");
+$stmt->execute([json_encode($params, JSON_UNESCAPED_SLASHES), $jid]);
+
+// Non-fatal error, analysis can continue
+} catch (Throwable $e) {}
 
 // Inserting into MySQL database, debugged using ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 try {

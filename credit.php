@@ -161,6 +161,11 @@ JavaScript query validation pattern adapted from:
 <a href="https://www.geeksforgeeks.org/javascript/username-validation-in-js-regex/" target="_blank">GeeksforGeeks username validation example</a>
 </li>
 <li>
+Writing FASTA file from GenBank output taken from: 
+<a href="https://warwick.ac.uk/fac/sci/moac/people/students/peter_cock/python/genbank2fasta" target="_blank">
+Resource from the University of Warwick</a>
+</li>
+<li>
 Temporary table upsert strategy informed by: 
 <a href="https://stackoverflow.com/questions/15271202/mysql-load-data-infile-with-on-duplicate-key-update" target="_blank">
 Stack Overflow discussion</a>

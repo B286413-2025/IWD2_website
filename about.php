@@ -29,7 +29,7 @@ echo <<<_NAV
 <li><a href="#workflow">Main Workflow</a></li>
 <li><a href="#pages">Main Pages</a></li>
 <li><a href="#scripts">Background Scripts</a></li>
-<li><a href="#python_tools">Python and Analysis Scripts</a></li>
+<li><a href="#py_scripts">Python and Analysis Scripts</a></li>
 <li><a href="#database">Database Overview</a></li>
 <li><a href="#tools">Tools Used</a></li>
 <li><a href="#security">Security and Access Model</a></li>
@@ -77,6 +77,13 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <li>The loading page polls job status until the job becomes <code>complete</code> or <code>error</code>, and refreshes every 3 seconds</li>
 <li>The results page retrieves the stored outputs and summary statistics and .</li>
 </ol>
+<p>
+<h3>Note:</h3>
+The website runs on a server used for multiple purposes. To prevent extremely large interactive jobs from overwhelming the web workflow 
+(for example, aligning <a href="https://en.wikipedia.org/wiki/Titin" target="_blank">titin</a> proteins &#128552),
+sequence retrieval is filtered by minimum length, maximum length, ambiguous residue content, and total retained dataset size (aa and sequence number).
+The applied thresholds and observed retained counts are stored along with other job parameters.
+</p>
 </section>
 <hr />
 
@@ -99,7 +106,7 @@ The main pages featured on this site, connected by session ID.
 </section>
 <hr />
 
-<section id="background_scripts">
+<section id="scripts">
 <h2>4. Background Scripts</h2>
 Background PHP scripts that allow pages transition, manipulation and overall site functionality.
 <br />Full scripts can be seen in my personal 

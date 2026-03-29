@@ -25,11 +25,11 @@ echo <<<_NAV
 <aside class="page-side-nav">
 <h2>On this Page</h2>
 <ul>
-<li><a href="#intro">Introduction</a></li>
 <li><a href="#function">What Can This Website Do?</a></li>
 <li><a href="#query">How to Run a Query</a></li>
 <li><a href="#outputs">Main Outputs</a></li>
 <li><a href="#interpretation">How to Interpret the Outputs</a></li>
+<li><a href="#filtering">Filtering and Dataset Limits</a></li>
 <li><a href="#general">Things to Keep in Mind</a></li>
 <li><a href="#example">Example Dataset</a></li>
 <li><a href="#">Back to Top</a></li>
@@ -110,7 +110,7 @@ The motif overview section lists PROSITE motifs detected in the selected protein
 <hr />
 
 <section id="interpretation">
-<h2>How to interpret the outputs</h2>
+<h2>How to Interpret the Outputs</h2>
 <p>A few general guidlines for output interpretation:</p>
 <ul>
 <li><b>High conservation</b> may point to important functional regions.</li>
@@ -120,11 +120,23 @@ The motif overview section lists PROSITE motifs detected in the selected protein
 </section>
 <hr />
 
+<section id="filtering">
+<h2>Filtering and Dataset Limits</h2>
+<p>
+To keep the website responsive and suitable for interactive use, automatic filtering is applied before alignment.
+<br />Very short, very long, or highly ambiguous protein sequences may be excluded.
+<br />Large datasets are also be limited by the number of sequences and the total number of residues processed.
+</p>
+<p>
+When filtering affects a job, the results page reports how many records were originally found and how many were retained for analysis.
+</p>
+</section>
+<hr />
+
 <section id="general">
-<h2>Things to keep in mind</h2>
+<h2>Things to Keep in Mind</h2>
 <ul>
-<li>Queries are limited to a 1000 sequences for a reasonable runtime.</li>
-<li>Some larger queries (many / long sequences) may still take longer to run.</li>
+<li>While queries are limited by size and amount, some larger queries (many / long sequences) may still take longer to run.</li>
 <li>Very broad queries may be limited in the number of sequences processed.</li>
 <li>Results depend on the exact records retrieved from external databases.</li>
 <li>Some jobs may fail if too few sequences are found for a meaningful alignment.</li>
@@ -133,7 +145,7 @@ The motif overview section lists PROSITE motifs detected in the selected protein
 <hr />
 
 <section id="example">
-<h2>Try the example dataset</h2>
+<h2>Try the Example Dataset</h2>
 <p>
 If you want to see how the website works before submitting your own query,
 you can look at the <a href="/~s2883992/website/example">example dataset</a>.

@@ -62,6 +62,30 @@ if ($job['status'] === 'pending') {
 	die();
 }
 
+// Deciding whether the Dataset Note section should appear
+$params = [];
+if (!empty($job['job_params'])) {
+	$tmp = json_decode((string)$job['job_params'], true);
+	if (is_array($tmp)) {
+		$params = $tmp;
+	}
+}
+
+// Getting the filters and checking whether the note appears
+$raw_match_num = isset($params['raw_match_num']) ? (int)$params['raw_match_num'] : null;
+$kept_num = isset($params['kept_num']) ? (int)$params['kept_num'] : null;
+$retmax = isset($params['retmax']) ? (int)$params['retmax'] : null;
+
+$show_filter_note = false;
+if ($raw_match_num !== null && $kept_num !== null) {
+	if ($raw_match_num > $kept_num) {
+		$show_filter_note = true;
+	}
+	if ($retmax !== null && $raw_match_num > $retmax) {
+		$show_filter_note = true;
+	}
+}
+
 echo <<<_HTML
 <!doctype html>
 <html lang="en">
@@ -83,6 +107,11 @@ echo <<<_NAV
 <h2>On this Page</h2>
 <ul>
 <li><a href="#query_param">Query Parameters</a></li>
+_NAV;
+if ($show_filter_note) {
+	echo "<li><a href='#dataset_note'>Dataset Note</a></li>";
+}
+echo <<<_NAV2
 <li><a href="#plotcon_res">Plotcon Results</a></li>
 <li><a href="#summary">Summary Statistics</a></li>
 <li><a href="#files">Downloads</a></li>
@@ -96,7 +125,7 @@ echo <<<_NAV
 <h1>Results</h1>
 </header>
 <hr />
-_NAV;
+_NAV2;
 
 // Rendering results using the rendering script
 require_once 'results_content.php';

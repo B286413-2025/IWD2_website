@@ -44,6 +44,80 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		}
 	}
 
+	// Displaying filtering note if needed
+	// Getting the filtering parameters
+	$raw_match_num = isset($params['raw_match_num']) ? (int)$params['raw_match_num'] : null;
+	$kept_num = isset($params['kept_num']) ? (int)$params['kept_num'] : null;
+	$retmax = isset($params['retmax']) ? (int)$params['retmax'] : null;
+	$minlen = isset($params['minlen']) ? (int)$params['minlen'] : null;
+	$maxlen = isset($params['maxlen']) ? (int)$params['maxlen'] : null;
+	$max_x_frac = isset($params['max_x_frac']) ? (float)$params['max_x_frac'] : null;
+	$max_total_aa = isset($params['max_total_aa']) ? (int)$params['max_total_aa'] : null;
+	$max_kept = isset($params['max_kept']) ? (int)$params['max_kept'] : null;
+
+	$show_filter_note = false;
+	if ($raw_match_num !== null && $kept_num !== null) {
+		
+		// Checking if kept num doesn't match the original match num
+		if ($raw_match_num > $kept_num) {
+			$show_filter_note = true;
+		}
+		
+		// Or if number of matches was larger than retmax	
+		if ($retmax !== null && $raw_match_num > $retmax) {
+			$show_filter_note = true;
+		}
+	}
+	
+	// Displaying informative note
+	if ($show_filter_note) {
+		echo "<section id='dataset_note'>";
+		echo "<h2>Dataset Note</h2>";
+		echo "<p>";
+		
+		// Original match num
+		if ($raw_match_num !== null) {
+			echo "NCBI returned <b>" . htmlspecialchars((string)$raw_match_num) . "</b> matching records. ";
+		}
+
+		// Number of returned records if mismatch
+		if ($retmax !== null && $raw_match_num !== null && $raw_match_num > $retmax) {
+			echo "Up to <b>" . htmlspecialchars((string)$retmax) . "</b> records can be retrieved for processing. ";
+		}
+
+		// Number of retained records
+		if ($kept_num !== null) {
+			echo "<b>" . htmlspecialchars((string)$kept_num) . "</b> sequences were retained after filtering. ";
+		}
+
+		echo "</p>";
+
+		// Current filtering thresholds paragraph
+		echo "<p>";
+		echo "Current filtering thresholds: ";
+		echo "<ul>";
+		if ($minlen !== null) {
+			echo "<li><b>Minimum length</b> = " . htmlspecialchars((string)$minlen) . " aa</li>";
+		}
+
+		if ($maxlen !== null) {
+			echo "<li><b>Maximum length</b> = " . htmlspecialchars((string)$maxlen) . " aa</li>";
+		}
+		
+		if ($max_x_frac !== null) {
+			echo "<li><b>Maximum ambiguous residue fraction</b> = " . htmlspecialchars((string)$max_x_frac) . "</li>";
+		}
+		
+		if ($max_total_aa !== null) {
+			echo "<li><b>Maximum total dataset size</b> = " . htmlspecialchars((string)$max_total_aa) . " aa</li>";
+		}
+		if ($max_kept !== null) {
+			echo "<li><b>Maximum retained sequences</b> = " . htmlspecialchars((string)$max_kept) . "</li>";
+		}
+		echo "</ul></p>";
+		echo "</section><hr />";
+	}
+
 	// Complete case - displaying results
 	
   // Plotcon
@@ -108,7 +182,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			// In-page
       echo "<img src='" . $BASE . "/get_output.php?output_id=" . $oid . "' alt='plotcon'>";
 			echo "</a>";
-			echo "<p><figcaption><i>Click for the full-size version.</i></figcaption></p>";
+			echo "<p><i>Click for the full-size version.</i></p>";
 		} else {
 			echo "<p><i>No browser-displayable plotcon image found.</i></p>";
 		}
@@ -124,8 +198,10 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		if ($req_row && $requested_fmt !== 'png') {
 			$oid = (int)$req_row['output_id'];
 			$fname = htmlspecialchars((string)($req_row['file_name'] ?? 'requested_plot'));
-			echo ($png_row ? " | " : "");
-			echo "<a class='button-link secondary' href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download requested format</a> (" . $fname . ")";
+			echo "<div>";
+			echo "<a class='button-link secondary' href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download requested format</a>";
+			echo "</div>";
+			echo "<div><small>(" . $fname . ")</small></div>";
 		}
 		echo "</div>";
 	}
@@ -446,7 +522,12 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 				// And cell values, with fallback
 				for (const f of fields) {
 					const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
-					html += '<td>' + val + '</td>';
+					if (f === 'accession' && val !== '') {
+						const ncbiUrl = 'https://www.ncbi.nlm.nih.gov/protein/' + encodeURIComponent(val);
+						html += '<td><a href="' + ncbiUrl + '" target="_blank">' + val + '</a></td>';
+					} else {
+						html += '<td>' + val + '</td>';
+					}
 				}
 
 				// Optional fasta sequence
@@ -667,7 +748,12 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			// And cells
 			for (const f of fields) {
 				const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
-				html += '<td>' + val + '</td>';
+				if (f === 'accession' && val !== '') {
+					const ncbiUrl = 'https://www.ncbi.nlm.nih.gov/protein/' + encodeURIComponent(val);
+					html += '<td><a href="' + ncbiUrl + '" target="_blank">' + val + '</a></td>';
+				} else {
+					html += '<td>' + val + '</td>';
+				}
 			}
 		html += '</tr>';
 		}

@@ -27,6 +27,7 @@ echo <<<_INFO
 <p>Main query page</p>
 </header>
 <hr />
+
 <section id="overview">
 <h2>Overview</h2>
 <p>You can enter a taxonomic group and a protein name to perform the conservation analysis.
@@ -38,6 +39,13 @@ Clustal Omega output format: FASTA<br />
 Plotcon window size: 4<br>
 Plotcon output format: PNG<br>
 Motif scan: default patmatmotifs settings
+</p>
+
+<p>
+<b>Dataset filtering note:</b><br />
+For performance and usability, the website currently applies automatic filtering before alignment.
+Protein sequences shorter than 50 aa, longer than 2000 aa, or containing more than 5% ambiguous residues
+may be excluded. Very large datasets are also limited to at most 500 retained sequences and a total retained size of 200000 aa.
 </p>
 </section>
 <hr />

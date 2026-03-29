@@ -138,7 +138,7 @@ echo <<<_JS
 		const search = document.getElementById('prev_search').value.trim();
 	
 		// URL based on filter parameters
-		const url = new URL('previous_results_ajax.php', window.location.href);
+		const url = new URL('/~s2883992/website/previous_results_ajax.php', window.location.href);
 		if (status !== '') {
 			url.searchParams.set('status', status);
 		}
@@ -172,6 +172,7 @@ echo <<<_JS
 		html += '<th>Plot Format</th>';
 		html += '<th>MSA Format</th>';
 		html += '<th>Link</th>';
+		html += '<th>Dataset</th>';
 //		html += '<th>Error Preview</th>';
 		html += '</tr>';
 
@@ -201,6 +202,7 @@ echo <<<_JS
 			html += '<td>' + (row.plot_outfmt ?? 'png') + '</td>';
 			html += '<td>' + (row.clust_outfmt ?? 'fasta') + '</td>';
 			html += '<td><a href="' + link + '">' + label + '</a></td>';
+			html += '<td>' + (row.dataset_summary ?? '') + '</td>';
 //			html += '<td>' + (row.error_preview ?? '') + '</td>';
 			html += '</tr>';
 		}

@@ -13,7 +13,7 @@ $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
 	http_response_code(500);
 	echo json_encode(['ok' => false, 'error' => 'Missing user_hash']);
-	die("Missing user_hash");
+	die();
 }
 
 // Table filters from GET
@@ -32,7 +32,8 @@ try {
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (Throwable $e) {
 	http_response_code(500);
-	die("Database connection failed");
+	echo json_encode(['ok' => false, 'error' => 'Database connection failed']);
+	die();
 }
 
 // Retrieve information about previous jobs for the current user
@@ -93,7 +94,17 @@ try {
 		$job['win_size'] = $params['win_size'] ?? 4;
 		$job['plot_outfmt'] = $params['plot_outfmt'] ?? 'png';
 		$job['clust_outfmt'] = $params['clust_outfmt'] ?? 'fasta';
-	
+		$raw_match_num = $params['raw_match_num'] ?? null;
+		$kept_num = $params['kept_num'] ?? null;
+
+		if ($raw_match_num !== null && $kept_num !== null) {
+			$job['dataset_summary'] = $raw_match_num . " found / " . $kept_num . " kept";
+		} elseif ($kept_num !== null) {
+			$job['dataset_summary'] = $kept_num . " kept";
+		} else {
+			$job['dataset_summary'] = '';
+		}
+
 		// Short error preview
 //		if (!empty($job['error_message'])) {
 //			$err = (string)$job['error_message'];
@@ -117,5 +128,6 @@ try {
 
 } catch (Throwable $e) {
 	http_response_code(500);
-	die("Could not retrieve previous jobs: " .  htmlspecialchars($e->getMessage()));
+	echo json_encode(['ok' => false, 'error' => 'Could not retrieve previous jobs']);
+	die();
 }
