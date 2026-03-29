@@ -94,11 +94,12 @@ _NAV;
 echo <<<_HTML2
 <section id="process">
 <h2>Process Outline</h2>
-<ul>
-<li>A multiple sequence alignment of the retrieved proteins using <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a></li>
-<li>A <a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">plotcon</a> conservation plot showing how sequence conservation changes along the alignment</li>
-<li>A motif scan using <a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> patterns via EMBOSS <a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">patmatmotifs</a></li>
-</ul>
+<ol>
+<li>Sequence retrival from the <a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI protein database</a> </li>
+<li>Multiple sequence alignment of the retrieved sequences using <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a></li>
+<li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">Plotcon</a> conservation plot showing how sequence conservation changes along the alignment</li>
+<li>Motif scan using <a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> patterns via EMBOSS <a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">patmatmotifs</a></li>
+</ol>
 </section><hr />
 
 <section id="outline">
@@ -107,7 +108,7 @@ echo <<<_HTML2
 You can review the results page, inspect the conservation plot, and download the available outputs.</p>
 <p>The results contain:</p>
 <ul>
-<li><b>Plotcon plot</b>, available to view and download. The higher the graph, the more conserved the residue in this position.</li>
+<li><b>Plotcon plot</b>, available to view and download. It shows the conservation score (y) as a function of the residue number (x). Higher scores mean higher similarity and better conservation.</li>
 <li><b>Summary statistics</b> such as the number of sequences, represented organisms, alignment length, and most common motif</li>
 <li><b>Text file results</b> of the MSA and motif hits summary available to download</li>
 <li><b>Alignment and motif overview tables</b> that can be filtered and downloaded</li>

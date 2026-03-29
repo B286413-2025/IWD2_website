@@ -26,20 +26,25 @@ echo<<<_BODY
 <h1>Protein Conservation Analysis</h1>
 <h2>Welcome to my website for protein conservation!</h2>
 <p>In this site you can look at the conservation levels of a protein family from a certain taxonomic group.
-<br/>It was created as a web assessment component of the <a href="https://www.drps.ed.ac.uk/current/dpt/cxbilg11016.htm" target="_blank">Introduction to Website and Database Design</a> course.</p>
+<br/>It was created as a web assessment component of the <a href="https://www.drps.ed.ac.uk/current/dpt/cxbilg11016.htm" target="_blank">Introduction to Website and Database Design</a> course at the <a href="https://www.ed.ac.uk/" target="_blank">University of Edinburgh</a>.</p>
 </header>
 <hr>
 
 <section>
 <h2>Analysis Overview</h2>
-<p>Conservation analysis will be done using 
-<abbr title="EMBL's European Bioinformatics Institute">
-<a href="https://www.ebi.ac.uk/" target="_blank">EMBL-EBI</a></abbr>
-<a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a>, a multiple sequences alignment tool.
-<br/>Further downstream analysis includes searching for known motifs agaist the
-<a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> protein family and domains database.
-<br/>That will be done with the EMBOSS tool
-<a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/patmatmotifs" target="_blank">patmatmotifs</a>.
+<p>Conservation analysis will include four main steps:
+<ol>
+<li><b>Sequence retrieval</b> from the
+<abbr title="National Center for Biotechnology Information">
+<a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI</abbr> protein database</a>.</li>
+<li><b>Multiple sequence alignment</b> using
+<a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a>.</li>
+<li><b>Conservation plot</b> generated with 
+<a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">plotcon</a>.</li>
+<li><b>Searching for known motifs</b> against the 
+<a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> database using
+<a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/patmatmotifs" target="_blank">patmatmotifs</a>.</li>
+</ol>
 </p>
 </section>
 <hr>
@@ -47,7 +52,7 @@ echo<<<_BODY
 <section>
 <h2>Your Options</h2>
 <p>
-You can view an example analysis for conservation of glucose-6-phosphatase proteins
+You can view the precomputed example results of conservation of glucose-6-phosphatase proteins
 <br/>in birds (<i>Aves</i>), or you can continue to the main site and submit your own query and view past results.
 </p>
 <p>View the precomputed example dataset:</p>
@@ -55,12 +60,12 @@ You can view an example analysis for conservation of glucose-6-phosphatase prote
 <button type="submit">Example Dataset</button>
 </form>
 
-<p>Submit your own protein/taxon query:</p>
+<p>Submit your own query:</p>
 <form action="/~s2883992/website/query" method="get">
 <button type="submit">Submit Query</button>
 </form>
 
-<p>View analyses previously run in this browser:</p>
+<p>View previously run analyses:</p>
 <form action="/~s2883992/website/previous_results" method="get">
 <button type="submit">Previous Results</button>
 </form>
@@ -79,7 +84,7 @@ You can view an example analysis for conservation of glucose-6-phosphatase prote
 </form>
 </section>
 <hr>
-<main>
+</main>
 </body>
 </html>
 _BODY;

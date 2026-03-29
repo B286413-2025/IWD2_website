@@ -79,7 +79,7 @@ echo <<<_HEADER
 <main class='history-shell'>
 <header class='page-title'>
 <h1>Previous Results</h1>
-<p>A list of Previous analyses associated with your browser on this website.</p>
+<p>A list of previous analyses associated with your browser on this website.</p>
 </header><hr />
 _HEADER;
 

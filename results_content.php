@@ -25,7 +25,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	if ($job['status'] === 'error') {
 		echo "<p style='color:red'><b>An error has occurred</b> &#128533</p>";
 		echo "<pre>" . htmlspecialchars((string)($job['error_message'] ?? '')) . "</pre>";
-		echo "<p>You can try again or submit another query: <a href='" . $BASE . "/query'>back to query page</a></p>";
+		echo 'You can try again or submit another query: <a class="button-link" href="/~s2883992/website/query">Submit Query</a>';
 		return;
 	}
 	// Pending case
@@ -108,7 +108,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			// In-page
       echo "<img src='" . $BASE . "/get_output.php?output_id=" . $oid . "' alt='plotcon'>";
 			echo "</a>";
-			echo "<p><i>Click for the full-size version.</i></p>";
+			echo "<p><figcaption><i>Click for the full-size version.</i></figcaption></p>";
 		} else {
 			echo "<p><i>No browser-displayable plotcon image found.</i></p>";
 		}

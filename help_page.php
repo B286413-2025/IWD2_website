@@ -72,7 +72,9 @@ This website retrieves protein sequences for a protein family within a selected 
 <h3>1. Plotcon Conservation Plot</h3>
 <p>
 This plot shows how strongly conserved the aligned sequences are across the dataset.
-Regions with higher conservation are more likely to be functionally or structurally important.
+<br />It plots the the conservation score (y) as a function of the residue number (x). 
+<br />Higher scores indicate higher similarity and better conservation.
+<br />Regions with higher conservation are more likely to be functionally or structurally important.
 </p>
 
 <h3>2. Summary Statistics</h3>
@@ -81,7 +83,7 @@ The results page includes a summary table with values such as:
 </p>
 <ul>
 <li>Number of sequences included in the dataset</li>
-<li>Number of represented organisms</li>
+<li>Number of represented unique organisms</li>
 <li>Alignment length</li>
 <li>Mean raw sequence length</li>
 <li>Most common detected motif</li>
@@ -90,19 +92,19 @@ The results page includes a summary table with values such as:
 
 <h3>3. Text Files</h3>
 <p>
-The original text files outputs (MSA report and summarized motifs hits) are available for download.
+The original text files outputs (MSA report and summarized motifs hits) available to download.
 </p>
 
 <h3>4. Alignment Overview</h3>
 <p>
 The alignment overview section lets you inspect aligned sequences and compare gap content between entries.
-Large gap fractions may indicate lower similarity or more variable regions.
+<br />Large gap fractions may indicate lower similarity and more variable regions.
 </p>
 
 <h3>5. Motif Overview</h3>
 <p>
 The motif overview section lists PROSITE motifs detected in the selected protein set.
-You can inspect motif names, coordinates, and matches across different organisms.
+<br />You can inspect motif names, coordinates, and matches across different organisms.
 </p>
 </section>
 <hr />
@@ -114,7 +116,6 @@ You can inspect motif names, coordinates, and matches across different organisms
 <li><b>High conservation</b> may point to important functional regions.</li>
 <li><b>Low conservation</b> may indicate variable or lineage-specific regions.</li>
 <li><b>Repeated motifs across many species</b> may suggest conserved biological roles.</li>
-<li><b>Differences in motif content</b> may reflect evolutionary divergence or annotation differences.</li>
 </ul>
 </section>
 <hr />
@@ -123,7 +124,7 @@ You can inspect motif names, coordinates, and matches across different organisms
 <h2>Things to keep in mind</h2>
 <ul>
 <li>Queries are limited to a 1000 sequences for a reasonable runtime.</li>
-<li>Some larger queries (many / long sequences) may take longer to run.</li>
+<li>Some larger queries (many / long sequences) may still take longer to run.</li>
 <li>Very broad queries may be limited in the number of sequences processed.</li>
 <li>Results depend on the exact records retrieved from external databases.</li>
 <li>Some jobs may fail if too few sequences are found for a meaningful alignment.</li>
@@ -135,7 +136,7 @@ You can inspect motif names, coordinates, and matches across different organisms
 <h2>Try the example dataset</h2>
 <p>
 If you want to see how the website works before submitting your own query,
-you can open the <a href="/~s2883992/website/example">example dataset</a>.
+you can look at the <a href="/~s2883992/website/example">example dataset</a>.
 </p>
 </section>
 <hr />

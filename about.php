@@ -62,36 +62,38 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <section id="workflow">
 <h2>2. Main Workflow</h2>
 <ol>
-<li>The user lands on the front page and receives a browser cookie used to associate jobs with that browser.</li>
+<li>The user lands on the home page and receives a browser cookie used to associate jobs with that browser.</li>
 <li>The user submits a query from the query page.</li>
 <li>A job is created in the database with status <code>pending</code>.</li>
 <li>A background worker processes the job:
 	<ul>
 	<li>Downloads sequences from NCBI</li>
-	<li>Loads the dataset into MySQL</li>
 	<li>Runs Clustal Omega</li>
 	<li>Runs EMBOSS plotcon</li>
 	<li>Runs EMBOSS patmatmotifs</li>
+	<li>Loads the generated outputs to MySQL while preserving job information for each step</li>
 	</ul>
 </li>
-<li>The loading page polls job status until the job becomes <code>complete</code> or <code>error</code>.</li>
-<li>The results page retrieves the stored outputs and summary statistics.</li>
+<li>The loading page polls job status until the job becomes <code>complete</code> or <code>error</code>, and refreshes every 3 seconds</li>
+<li>The results page retrieves the stored outputs and summary statistics and .</li>
 </ol>
 </section>
 <hr />
 
 <section id="pages">
 <h2>3. Main Pages</h2>
+The main pages featured on this site, connected by session ID.
+<br />Full scripts can be seen in my personal 
+<a href="https://github.com/algra2001/IWD2_website", target="_blank">GitHub repository</a>.
 <ul>
-<li><b>front</b> - landing page with site overview and navigation</li>
-<li><b>query.php</b> - query form for taxon, protein family, and analysis options</li>
+<li><b>front</b> - landing home page with site overview and navigation</li>
+<li><b>query</b> - query form for taxon, protein family, and analysis options</li>
 <li><b>loading</b> - creates a pending job and waits for processing to finish</li>
-<li><b>results</b> - wrapper page for completed results</li>
-<li><b>results_content.php</b> - reusable results rendering block used by results and example pages</li>
-<li><b>example</b> - explanatory page for the precomputed example dataset</li>
+<li><b>results</b> - wrapper page for presenting completed results</li>
+<li><b>example</b> - explanatory page for a precomputed example dataset</li>
 <li><b>previous_results</b> - lists previous jobs associated with the current browser</li>
 <li><b>help</b> - user-facing biological help page</li>
-<li><b>credit</b> - statement of credits and sources</li>
+<li><b>credit</b> - statement of credits and sources used in creating the site</li>
 <li><b>not_found.php</b> - custom 404 page</li>
 </ul>
 </section>
@@ -99,12 +101,16 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 
 <section id="background_scripts">
 <h2>4. Background Scripts</h2>
+Background PHP scripts that allow pages transition, manipulation and overall site functionality.
+<br />Full scripts can be seen in my personal 
+<a href="https://github.com/algra2001/IWD2_website", target="_blank">GitHub repository</a>.
 <ul>
 <li><b>set_cookies.php</b> - creates and hashes the site cookie used for browser-level job ownership</li>
 <li><b>process_query.php</b> - CLI worker that processes a job by job ID</li>
-<li><b>get_output.php</b> - returns stored output files from the database</li>
-<li><b>alignment_ajax.php</b> - returns alignment overview data as JSON</li>
-<li><b>motif_ajax.php</b> - returns motif overview data as JSON</li>
+<li><b>results_content.php</b> - reusable results rendering block used by results and example pages</li>
+<li><b>get_output.php</b> - returns stored output files (MSA and plotcon) from the database, either for presenting or download</li>
+<li><b>alignment_ajax.php</b> - returns alignment overview data for table update</li>
+<li><b>motif_ajax.php</b> - returns motif overview data for table update</li>
 <li><b>download_alignment_ajax.php</b> - exports filtered alignment tables as TSV</li>
 <li><b>download_motif_ajax.php</b> - exports filtered motif tables as TSV</li>
 <li><b>download_motif_hits.php</b> - exports total motif hits report as TSV</li>
@@ -114,10 +120,13 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 
 <section id="py_scripts">
 <h2>5. Python and Analysis Scripts</h2>
+Analysis python scripts for data retrieval and analysis. All generate a TSV file suitable for SQL loading along with the outputs.
+<br />Full scripts can be seen in my personal
+<a href="https://github.com/algra2001/IWD2_website/tree/master/py_scripts", target="_blank">GitHub repository</a>.
 <ul>
-<li><b>download_sequences.py</b> - retrieves sequence data from NCBI and writes TSV/FASTA outputs</li>
-<li><b>msa_to_sql.py</b> - runs Clustal Omega and writes alignment output suitable for SQL loading</li>
-<li><b>patmat_to_sql.py</b> - runs patmatmotifs and writes motif hits to a TSV suitable for SQL loading</li>
+<li><b>download_sequences.py</b> - retrieves sequence data from NCBI</li>
+<li><b>msa_to_sql.py</b> - runs Clustal Omega</li>
+<li><b>patmat_to_sql.py</b> - runs patmatmotifs</li>
 </ul>
 </section>
 <hr />
@@ -127,20 +136,21 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 <p>The database stores both reusable query/sequence information and job-specific outputs.</p>
 
 <h3>Main Tables</h3>
+<p>The tables used to store analysis outputs and manage user-job data.</p>
 <ul>
 <li><b>queries</b> - unique combinations of protein family and taxon</li>
 <li><b>sequences</b> - accession, organism, and raw sequence data</li>
 <li><b>seq_group</b> - links queries to the sequences associated with them</li>
-<li><b>jobs</b> - one row per analysis job, including status and JSON job parameters</li>
-<li><b>aligned_sequences</b> - aligned sequences for a given job</li>
-<li><b>analysis_outputs</b> - stored text or binary outputs such as MSA files and plotcon outputs</li>
-<li><b>motif_hits</b> - structured motif hits from patmatmotifs</li>
+<li><b>jobs</b> - per job metadata, including status and JSON job parameters</li>
+<li><b>aligned_sequences</b> - aligned sequences (MSA) for a given job</li>
+<li><b>analysis_outputs</b> - per analysis stored results (text or binary), like MSA file and plotcon output</li>
+<li><b>motif_hits</b> - motif hit results from patmatmotifs</li>
 </ul>
 
-<h3>Storage model</h3>
+<h3>Storage Model</h3>
 <p>
-Binary outputs such as images are stored in <code>blob_data</code>, and text outputs such as MSA reports are stored in <code>text_data</code>.
-This avoids depending on writable web directories for persistent output storage.
+All outputs are stored in the database. Binary outputs such as images are stored in <code>blob_data</code>, and text outputs such as MSA reports are stored in <code>text_data</code>.
+<br />This avoids depending on writable web directories for persistent output storage, and allows easy and comprehensive output querying.
 </p>
 
 <h3>Schema Diagram</h3>
@@ -151,17 +161,16 @@ The following diagram summarises the current database structure used by the webs
 
 <figure>
 <a href="/~s2883992/website/images/website_diagram.png" target="_blank">
-<img src="/~s2883992/website/images/website_diagram.png" alt="Database schema diagram for the website"
-style="max-width:100%; height:auto; border:1px solid #ccc;">
+<img src="/~s2883992/website/images/website_diagram.png" alt="Database schema diagram for the website">
 </a>
 <figcaption>
-Figure: Database schema used by the website. Click the image to open the full-size version.
+<i>Database schema used by the website.</i>
 </figcaption>
 </figure>
 
 <p>
-The full SQL script used to generate the database, which includes indexing and unique constraints as well, can be seen in 
-<a href="https://github.com/algra2001/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">my personal GitHub repository</a>.
+The full SQL script used to generate the database, which includes indexing and unique constraints as well, can be seen in my personal 
+<a href="https://github.com/algra2001/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">GitHub repository</a>.
 </p>
 </section>
 <hr />
@@ -169,14 +178,14 @@ The full SQL script used to generate the database, which includes indexing and u
 <section id="tools">
 <h2>7. Tools Used</h2>
 <ul>
-<li>PHP</li>
-<li>MySQL</li>
-<li>JavaScript (including AJAX for the results tables)</li>
-<li>Python 3</li>
-<li>Biopython</li>
-<li>Clustal Omega</li>
-<li>EMBOSS plotcon</li>
-<li>EMBOSS patmatmotifs</li>
+<li><a href="https://www.php.net/releases/8.2/en.php" target="_blank">PHP 8.2.8</a></li>
+<li><a href="https://dev.mysql.com/downloads/mysql/8.0.html" target="_blank">MySQL 8.0.45</a></li>
+<li>JavaScript (browser-native)</li>
+<li><a href="https://www.python.org/downloads/release/python-3135/" target="_blank">Python 3.13.5</a></li>
+<li><a href="https://biopython.org/wiki/Download" target="_blank">Biopython 1.86</a></li>
+<li><a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega 1.2.4</a></li>
+<li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">EMBOSS 6.6.0.0 plotcon</a></li>
+<li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">EMBOSS 6.6.0.0 patmatmotifs</a></li>
 </ul>
 </section>
 <hr />

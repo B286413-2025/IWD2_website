@@ -29,12 +29,12 @@ echo <<<_INFO
 <hr />
 <section id="overview">
 <h2>Overview</h2>
-<p>You can enter a taxonomic group and a protein name for a conservation analysis.
-<br/ >The settings of the analysis outputs can be modified, otherwise defaults will be used.</p>
+<p>You can enter a taxonomic group and a protein name to perform the conservation analysis.
+<br />The settings of the analysis outputs can be modified, otherwise defaults will be used.</p>
 
 <p>
-<b>Default analysis settings:</b><br>
-ClustalO output format: FASTA<br>
+<b>Default analysis settings:</b><br />
+Clustal Omega output format: FASTA<br />
 Plotcon window size: 4<br>
 Plotcon output format: PNG<br>
 Motif scan: default patmatmotifs settings
@@ -109,7 +109,7 @@ function validate(form) {
 <details>
 <summary><b>Advanced settings</b></summary>
 	<fieldset>
-	<legend>ClustalO Parameters</legend>
+	<legend>Clustal Omega Parameters</legend>
 	<table class="form-table">
 		<tr>
 		<td>Output Format:</td>
@@ -135,7 +135,7 @@ function validate(form) {
 		<td>Window Size:</td>
 		<td>
 			<input type="number" name="win_size" id="win_size" min="1" max="100" step="1" value="4">
-		<td/> 
+		</td> 
 		<td>Output Format:</td>
 		<td>
 			<select name="plot_outfmt" id="plot_outfmt" size="5">

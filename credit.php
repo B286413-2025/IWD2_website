@@ -110,6 +110,9 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 <a href="https://biopython.org/" target="_blank">Biopython Documentation</a> - used for sequence retrieval and parsing with Entrez / SeqIO
 </li>
 <li>
+<a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI protein database</a> - for sequence retrieval
+</li>
+<li>
 <a href="https://www.ncbi.nlm.nih.gov/books/NBK179288/" target="_blank">NCBI Entrez Direct / E-utilities</a> documentation - for sequence retrieval concepts
 </li>
 <li>
@@ -184,12 +187,14 @@ W3 Schools entry</a>
 <section id="software">
 <h2>5. Software Used</h2>
 <ul>
-<li>PHP</li>
-<li>MySQL</li>
-<li>Python 3</li>
-<li>Clustal Omega</li>
-<li>EMBOSS plotcon</li>
-<li>EMBOSS patmatmotifs</li>
+<li><a href="https://www.php.net/releases/8.2/en.php" target="_blank">PHP 8.2.8</a></li>
+<li><a href="https://dev.mysql.com/downloads/mysql/8.0.html" target="_blank">MySQL 8.0.45</a></li>
+<li>JavaScript (browser-native)</li>
+<li><a href="https://www.python.org/downloads/release/python-3135/" target="_blank">Python 3.13.5</a></li>
+<li><a href="https://biopython.org/wiki/Download" target="_blank">Biopython 1.86</a></li>
+<li><a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega 1.2.4</a></li>
+<li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">EMBOSS 6.6.0.0 plotcon</a></li>
+<li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">EMBOSS 6.6.0.0 patmatmotifs</a></li>
 </ul>
 </section>
 <hr />
