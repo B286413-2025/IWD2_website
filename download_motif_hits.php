@@ -1,6 +1,6 @@
 <?php 
 // Debugged using ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
-// Script to generate motif tsv report for download
+// Script to export motif hits as a TSV report
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
@@ -12,6 +12,7 @@ if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
+session_write_close();
 
 // jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
@@ -27,20 +28,25 @@ try {
 
 	// Verifying user-job
 	$stmt = $conn->prepare("
-	SELECT job_id
+	SELECT status
 	FROM jobs
 	WHERE job_id = ?
 	AND (user_hash = ? OR is_example = 1)
 	LIMIT 1
 	");
 	$stmt->execute([$jid, $user_hash]);
-	$check = $stmt->fetchColumn();
-	// Exit if not found, 
-	if (!$check) {
+	$status = $stmt->fetchColumn();
+	// Exit if not found or not accessible
+	if (!$status) {
 		http_response_code(404);
-		require __DIR__ . '/not_found.php';
-		die();
+		die("Not found");
 	}
+	// Only allow downloads for completed jobs
+	if ($status !== 'complete') {
+		http_response_code(400);
+		die("Job not complete");
+	}
+
 
 	// Retrieving motif information for report
 	$stmt = $conn->prepare("
@@ -59,7 +65,8 @@ try {
 	");
 	$stmt->execute([$jid]);
 
-	// Filesname and headers for TSV download
+	// Filename and headers for TSV download
+	// ELM (GPT 5.2) assisted code, https://elm.edina.ac.uk/elm-new
 	$fname = "motif_hits_job_" . $jid . ".tsv";
 	header("Content-Type: text/tab-separated-values; charset=utf-8");
 	header("Content-Disposition: attachment; filename=\"" . addslashes($fname) . "\"");
@@ -74,7 +81,7 @@ try {
 		$clean = [];
 		foreach ($row as $cell) {
 			$cell = (string)$cell;
-			$cell = str_replace(["\t", "\n"], " ", $cell);
+			$cell = str_replace(["\t", "\r", "\n"], " ", $cell);
 			$clean[] = $cell;
 		}
 		// Echoing tsv lines

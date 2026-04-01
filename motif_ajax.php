@@ -1,6 +1,6 @@
 <?php 
 // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
-// Script to retrieve motif data from SQL to results page in JSON for interactive query
+// Script to retrieve motif data from MySQL in JSON format for interactive display on the results page
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
@@ -14,6 +14,7 @@ if ($user_hash === '') {
 	echo json_encode(['ok' => false, 'error' => 'Missing user_hash']);
 	die();
 }
+session_write_close();
 
 // Check job id
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
@@ -52,7 +53,12 @@ if (strlen($motif_like) > 255) {
 }
 
 // Minimum score
-$min_score = isset($_GET['min_score']) && $_GET['min_score'] !== '' ? (float)$_GET['min_score'] : null;
+$min_score = null;
+if (isset($_GET['min_score']) && $_GET['min_score'] !== '') {
+	if (is_numeric($_GET['min_score'])) {
+		$min_score = (float)$_GET['min_score'];
+	}
+}
 
 // SQL sorting map for query
 $sort_map = [

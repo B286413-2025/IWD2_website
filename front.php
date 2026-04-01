@@ -32,11 +32,12 @@ echo<<<_BODY
 
 <section>
 <h2>Analysis Overview</h2>
-<p>Conservation analysis will include four main steps:
+<p>Conservation analysis will include four main steps:</p>
 <ol>
 <li><b>Sequence retrieval</b> from the
-<abbr title="National Center for Biotechnology Information">
-<a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI</abbr> protein database</a>.</li>
+<a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank"> 
+<abbr title="National Center for Biotechnology Information">NCBI</abbr>
+protein database</a>.</li>
 <li><b>Multiple sequence alignment</b> using
 <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a>.</li>
 <li><b>Conservation plot</b> generated with 
@@ -45,7 +46,6 @@ echo<<<_BODY
 <a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> database using
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/patmatmotifs" target="_blank">patmatmotifs</a>.</li>
 </ol>
-</p>
 </section>
 <hr>
 
@@ -53,24 +53,24 @@ echo<<<_BODY
 <h2>Your Options</h2>
 <p>
 You can view the precomputed example results of conservation of glucose-6-phosphatase proteins
-<br/>in birds (<i>Aves</i>), or you can continue to the main site and submit your own query and view past results.
-</p>
-<p>View the precomputed example dataset:</p>
+<br/>in birds (<i>Aves</i>), submit your own query, or view previous results.
+<h3>Main Actions</h3>
+<div class="button-group">
 <form action="/~s2883992/website/example" method="get">
 <button type="submit">Example Dataset</button>
 </form>
 
-<p>Submit your own query:</p>
 <form action="/~s2883992/website/query" method="get">
 <button type="submit">Submit Query</button>
 </form>
 
-<p>View previously run analyses:</p>
 <form action="/~s2883992/website/previous_results" method="get">
 <button type="submit">Previous Results</button>
 </form>
+</div>
 
-<p>Help and further information:</p>
+<h3>Information</h3>
+<div class="button-group">
 <form action="/~s2883992/website/help_page" method="get">
 <button type="submit">Help</button>
 </form>
@@ -82,6 +82,7 @@ You can view the precomputed example results of conservation of glucose-6-phosph
 <form action="/~s2883992/website/credit" method="get">
 <button type="submit">Statement of Credits</button>
 </form>
+</div>
 </section>
 <hr>
 </main>

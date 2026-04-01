@@ -3,7 +3,6 @@
 // Checking user name is set
 session_start();
 require_once 'set_cookies.php';
-require_once 'login.php';
 echo<<<_HTML
 
 <!doctype html>
@@ -20,36 +19,15 @@ _HTML;
 include 'cookies.html';
 include'menuf.php';
 
-echo <<<_INFO
+echo <<<_HEADER
 <main class="query-shell">
 <header class="page-title">
 <h1>Query Submission</h1>
-<p>Main query page</p>
+<p>Submit a protein family and taxonomic group to analyse conservation and motif content.
+<br />Additional information on default parameters can be seen below.</p>
 </header>
 <hr />
-
-<section id="overview">
-<h2>Overview</h2>
-<p>You can enter a taxonomic group and a protein name to perform the conservation analysis.
-<br />The settings of the analysis outputs can be modified, otherwise defaults will be used.</p>
-
-<p>
-<b>Default analysis settings:</b><br />
-Clustal Omega output format: FASTA<br />
-Plotcon window size: 4<br>
-Plotcon output format: PNG<br>
-Motif scan: default patmatmotifs settings
-</p>
-
-<p>
-<b>Dataset filtering note:</b><br />
-For performance and usability, the website currently applies automatic filtering before alignment.
-Protein sequences shorter than 50 aa, longer than 2000 aa, or containing more than 5% ambiguous residues
-may be excluded. Very large datasets are also limited to at most 500 retained sequences and a total retained size of 200000 aa.
-</p>
-</section>
-<hr />
-_INFO;
+_HEADER;
 
 echo <<<_FORM
 <section class="form-panel">
@@ -105,10 +83,10 @@ function validate(form) {
 <legend>Query Parameters</legend>  
 <table class="form-table">
 	<tr>	
-	<td>Taxonomic group:</td><td><input type="text" name="taxon" placeholder="Aves" maxlength="100" required/></td>
+	<td><label for="taxon">Taxonomic group:</label></td><td><input id="taxon" type="text" name="taxon" placeholder="Aves" maxlength="100" required/></td>
 	</tr>
 	<tr>
-	<td>Protein family:</td><td><input type="text" name="prot_fam" placeholder="glucose-6-phosphatase" required/></td>
+	<td><label for="prot_fam">Protein family:</label></td><td><input id="prot_fam" type="text" name="prot_fam" placeholder="glucose-6-phosphatase" required/></td>
 	</tr>
 </table>
 </fieldset>
@@ -120,9 +98,9 @@ function validate(form) {
 	<legend>Clustal Omega Parameters</legend>
 	<table class="form-table">
 		<tr>
-		<td>Output Format:</td>
+		<td><label for="clust_outfmt">Output Format:</label></td>
 		<td>
-			<select name="clust_outfmt" id="clust_outfmt" size="5">
+			<select name="clust_outfmt" id="clust_outfmt">
 			<option value="fasta" selected>FASTA</option>
 			<option value="clustal">Clustal</option>
 			<option value="msf">MSF</option>
@@ -140,13 +118,13 @@ function validate(form) {
 	<legend>Plotcon Parameters</legend>
 	<table class="form-table">
 		<tr>
-		<td>Window Size:</td>
+		<td><label for="win_size">Window Size:</label></td>
 		<td>
 			<input type="number" name="win_size" id="win_size" min="1" max="100" step="1" value="4">
 		</td> 
-		<td>Output Format:</td>
+		<td><label for="plot_outfmt">Output Format:</label></td>
 		<td>
-			<select name="plot_outfmt" id="plot_outfmt" size="5">
+			<select name="plot_outfmt" id="plot_outfmt">
 			<option value="png" selected>png</option>
 			<option value="pdf">pdf</option>
 			<option value="svg">svg</option>
@@ -172,8 +150,34 @@ function validate(form) {
 </div>
 </form>
 </section>
-</main>
+<hr />
 _FORM;
+
+// Info
+echo <<<_INFO
+<section id="overview">
+<h2>Overview</h2>
+<p>You can enter a taxonomic group and a protein name to perform the conservation analysis.
+<br />The settings of the analysis outputs can be modified, otherwise defaults will be used.</p>
+
+<p>
+<b>Default analysis settings:</b><br />
+Clustal Omega output format: FASTA<br />
+Plotcon window size: 4<br>
+Plotcon output format: PNG<br>
+Motif scan: default patmatmotifs settings
+</p>
+
+<p>
+<b>Dataset filtering note:</b><br />
+For performance and usability, the website currently applies automatic filtering before alignment.
+Protein sequences shorter than 50 aa, longer than 2000 aa, or containing more than 5% ambiguous residues
+may be excluded. Very large datasets are also limited to at most 500 retained sequences and a total retained size of 200000 aa.
+</p>
+</section>
+<hr />
+</main>
+_INFO;
 
 echo <<<_TAIL
 </body>

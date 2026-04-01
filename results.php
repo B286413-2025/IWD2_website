@@ -12,6 +12,7 @@ $BASE = '/~s2883992/website';
 // Verifying required parameters exist
 // User hash
 $user_hash = $_SESSION['user_hash'] ?? '';
+session_write_close();
 if ($user_hash === '') {
 	die("Missing user_hash");
 }
@@ -71,7 +72,7 @@ if (!empty($job['job_params'])) {
 	}
 }
 
-// Getting the filters and checking whether the note appears
+// Getting the filters and checking whether the note should appear
 $raw_match_num = isset($params['raw_match_num']) ? (int)$params['raw_match_num'] : null;
 $kept_num = isset($params['kept_num']) ? (int)$params['kept_num'] : null;
 $retmax = isset($params['retmax']) ? (int)$params['retmax'] : null;
@@ -91,6 +92,7 @@ echo <<<_HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="stylesheet" href="/~s2883992/website/styles.css" />
 <title>Results</title>
 </head>
@@ -132,7 +134,7 @@ require_once 'results_content.php';
 render_results_content($conn, $job, $jid);
 
 echo <<<_HTML3
-</div>
+</main>
 </body>
 </html>
 _HTML3;

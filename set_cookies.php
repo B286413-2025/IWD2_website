@@ -1,9 +1,9 @@
 <?php
-// Essential cookie - user ID to save results
+// Essential cookie - browser token used to associate jobs with this browser
 // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
 $uid_cookie = 'site_uid';
 $cookie_path = '/~s2883992/website/';
-// TODO: maybw change for less time
+// TODO: maybe reduce the expiry period later
 $cookie_expiry = time() + (365 * 24 * 60 * 60);
 
 // Setting the cookie
@@ -17,7 +17,8 @@ if (empty($_COOKIE[$uid_cookie])) {
                 'path'     => $cookie_path,
                 // HTTPS and no JS
                 'secure'   => $is_https,
-                'httponly' => true
+		'httponly' => true,
+		'samesite' => 'Lax'
 	]);
 
 	// Updating $_COOKIE within request for hashing

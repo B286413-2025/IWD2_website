@@ -1,5 +1,5 @@
 <?php 
-// Custom 404 error page
+// Custom 404 error page, used both as an ErrorDocument and as an included not-found response
 
 http_response_code(404);
 
@@ -27,7 +27,7 @@ echo <<<_BODY
 <main class="center-page">
 <section>
 <h1>404 - Page Not Found</h1>
-<p>Sorry, the page you requested could not be found on this website &#128560</p>
+<p>Sorry, the page you requested could not be found on this website &#128560;</p>
 <p>But no worries, you still have many options!</p>
 <div class="button-group">
 <a class="button-link" href="/~s2883992/website/front">Home Page</a>
@@ -37,7 +37,6 @@ echo <<<_BODY
 </div>
 </section>
 </main>
-</form>
 </body>
 </html>
 _BODY;

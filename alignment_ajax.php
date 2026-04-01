@@ -1,5 +1,5 @@
 <?php // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
-// Script to fetch alignment data is JSON format to display on results page interactively
+// Script to fetch alignment data is JSON format for interactive display on the results page
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
@@ -10,15 +10,16 @@ header("Content-Type: application/json; charset=utf-8");
 $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
 	http_response_code(500);
-	echo json_encode(['ok' => false, 'error' => 'Missing user_hash']);
+	echo json_encode(['ok' => false, 'error' => 'Missing user_hash'], JSON_UNESCAPED_SLASHES);
 	die();
 }
+session_write_close();
 
 // Checking jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
 if ($jid <= 0) {
 	http_response_code(400);
-	echo json_encode(['ok' => false, 'error' => 'Missing job_id']);
+	echo json_encode(['ok' => false, 'error' => 'Missing job_id'], JSON_UNESCAPED_SLASHES);
 	die();
 }
 
@@ -84,15 +85,15 @@ try {
 	");
 	$stmt->execute([$jid, $user_hash]);
 	$status = $stmt->fetchColumn();
-	// Updating if not found
+	// Return 404 if the job does not exist or is not visible to this user
 	if (!$status) {
 		http_response_code(404);
-		echo json_encode(['ok' => false, 'error' => 'Not found']);
+		echo json_encode(['ok' => false, 'error' => 'Not found'], JSON_UNESCAPED_SLASHES);
         	die();
 	}
 	// Or not complete
 	if ($status !== 'complete') {
-		echo json_encode(['ok' => true, 'status' => $status, 'rows' => []]);
+		echo json_encode(['ok' => true, 'status' => $status, 'rows' => []], JSON_UNESCAPED_SLASHES);
 		die();
 	}
 	
@@ -120,7 +121,7 @@ try {
 	// Binding jid
 	$params = [':jid' => $jid];
 
-	// Optional filtering 
+	// Optional filters: organism substring, minimum gap count, minimum gap fraction 
 	if ($organism_like !== '') {
 		$sql .= " AND s.organism LIKE :org ";
         	$params[':org'] = '%' . $organism_like . '%';
@@ -153,10 +154,10 @@ try {
         	'status' => 'complete',
         	'job_id' => $jid,
         	'rows' => $rows
-	]);
+	], JSON_UNESCAPED_SLASHES);
 
 // Updating on failure
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['ok' => false, 'error' => 'Server error']);
+    echo json_encode(['ok' => false, 'error' => 'Server error'], JSON_UNESCAPED_SLASHES);
 }

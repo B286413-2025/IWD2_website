@@ -2,6 +2,7 @@
 // Help page explaining what the website can do
 session_start();
 require_once 'set_cookies.php';
+session_write_close();
 
 echo <<<_HTML
 <!doctype html>
@@ -72,7 +73,7 @@ This website retrieves protein sequences for a protein family within a selected 
 <h3>1. Plotcon Conservation Plot</h3>
 <p>
 This plot shows how strongly conserved the aligned sequences are across the dataset.
-<br />It plots the the conservation score (y) as a function of the residue number (x). 
+<br />It plots the conservation score (y) as a function of the residue number (x). 
 <br />Higher scores indicate higher similarity and better conservation.
 <br />Regions with higher conservation are more likely to be functionally or structurally important.
 </p>
@@ -111,7 +112,7 @@ The motif overview section lists PROSITE motifs detected in the selected protein
 
 <section id="interpretation">
 <h2>How to Interpret the Outputs</h2>
-<p>A few general guidlines for output interpretation:</p>
+<p>A few general guidelines for output interpretation:</p>
 <ul>
 <li><b>High conservation</b> may point to important functional regions.</li>
 <li><b>Low conservation</b> may indicate variable or lineage-specific regions.</li>
@@ -125,7 +126,7 @@ The motif overview section lists PROSITE motifs detected in the selected protein
 <p>
 To keep the website responsive and suitable for interactive use, automatic filtering is applied before alignment.
 <br />Very short, very long, or highly ambiguous protein sequences may be excluded.
-<br />Large datasets are also be limited by the number of sequences and the total number of residues processed.
+<br />Large datasets may also be limited by the number of sequences and the total number of residues processed.
 </p>
 <p>
 When filtering affects a job, the results page reports how many records were originally found and how many were retained for analysis.
@@ -153,6 +154,7 @@ you can look at the <a href="/~s2883992/website/example">example dataset</a>.
 </section>
 <hr />
 </main>
+</div>
 </body>
 </html>
 _BODY;

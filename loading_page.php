@@ -13,6 +13,7 @@ $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
 	die("Missing user_hash");
 }
+session_write_close();
 
 // MySQL connection, adapted from class code
 try {
@@ -107,7 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 	// Redirecting to GET so refresh doesn’t re-submit POST
-	// Adapted from: https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form
 	header("Location: " . $BASE . "/loading/" . $jid);
 	die;
 }
@@ -166,6 +166,7 @@ echo<<<_HTML
 _HTML;
 
 // Checking if job is pending, refreshing every 3 seconds
+// Adapted from: https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form
 if ($job['status'] === 'pending') {
 	echo "<meta http-equiv='refresh' content='3'>";
 }
@@ -227,7 +228,7 @@ if ($job['status'] === 'error') {
 // Fallback
 echo <<<_HTML
 <p>Unknown status.</p>
-<p><a href='" . $BASE . "/query'>Back to query page</a></p>
+<p><a href='/~s2883992/website/query'>Back to query page</a></p>
 </section>
 </main>
 </body>

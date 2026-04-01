@@ -23,13 +23,14 @@ if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
+session_write_close();
 
 // MySQL connection, adapted from class code
 try {
 	$dsn = "mysql:host=127.0.0.1;dbname=$database;charset=utf8mb4";
 	$conn = new PDO($dsn, $username, $password);
 	$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	// Getting file name and data for identified user onlt
+	// Getting file name and data for identified user only
 	$stmt = $conn->prepare("
 		SELECT ao.mime_type, ao.file_name, ao.blob_data, ao.text_data
 		FROM analysis_outputs AS ao
@@ -44,8 +45,7 @@ try {
 	// Exiting if not found
 	if (!$row) {
 		http_response_code(404);
-		require __DIR__ . '/not_found.php';
-		die();
+		die("Not found");
 	}
 
 	// Checking output type
@@ -59,11 +59,10 @@ try {
 	// Otherwise die
 	} else {
 		http_response_code(404);
-		require __DIR__ . '/not_found.php';
-		die();
+		die("Not found");
 	}
 
-	// Getting the correct mime type, fallback for blob
+	// Getting the correct mime type, with a default fallback
 	// TODO: kinda brittle
 	$mime = $row['mime_type'] ?: "application/octet-stream";
 	// If text data, fallback for text
@@ -93,8 +92,9 @@ try {
 	}
 
 	echo $output;
+	die();
 
 } catch (Throwable $e) {
 	http_response_code(500);
-	die("Server error");
+	die();
 }

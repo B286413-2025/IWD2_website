@@ -1,24 +1,35 @@
 <?php 
 // Setting global menu options for the website, adapted from class code
+// Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 
 // Base url
-$BASE = '/~s2883992/website';
+if (!isset($BASE)) {
+	$BASE = '/~s2883992/website';
+}
 
 // Getting current page and marking the active one in the menu
 $uri = $_SERVER['REQUEST_URI'] ?? '';
 
 // Function to check active page
 // Taking string URI and path, returning 'active' if active, empty string if not
-function menu_active($uri, $path) {
-	// Checking if path is substring of URI
-	$active = (strpos($uri, $path) !== false) ? 'active' : '';
-	return $active;
+function menu_active($uri, $paths) {
+	foreach ((array)$paths as $path) {
+	// For each, checking if path is substring of URI
+		if (strpos($uri, $path) !== false) {
+			return 'active';
+		}
+	}
+	return '';
 }
 $frontClass = menu_active($uri, '/front');
-$queryClass = menu_active($uri, '/query') ;
+$queryClass = (
+	menu_active($uri, ['/query', '/loading/'])
+);
 $exampleClass = menu_active($uri, '/example');
-$previousClass = menu_active($uri, '/previous_results'); 
-$helpClass = menu_active($uri, '/help'); 
+$previousClass = (
+	menu_active($uri, ['/previous_results', '/results/'])
+);
+$helpClass = menu_active($uri, '/help_page'); 
 $aboutClass = menu_active($uri, '/about'); 
 $creditClass = menu_active($uri, '/credit'); 
 

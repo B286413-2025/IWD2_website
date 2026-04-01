@@ -55,7 +55,7 @@ function job_error($conn, $jid, $msg) {
 	} catch (Throwable $e) {}
 	// Cleaning up
 	cleanup_workdir($dir);
-	die();
+	die(1);
 }
 
 // Function to find newest plotcon file because Plotcon returns unexpected file names...
@@ -80,7 +80,7 @@ try {
 	$conn = new PDO($dsn, $username, $password, 
 		array(PDO::MYSQL_ATTR_LOCAL_INFILE => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 } catch(PDOException $e) {
-        die("Connetion failed: " . $e->getMessage());
+        die("Connection failed: " . $e->getMessage());
 }
 
 // Trying to get parameters from jobs and queries table
@@ -186,8 +186,7 @@ $motif_py = $base_dir . "/py_scripts/patmat_to_sql.py";
 // Based on ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm/elm
 $workdir = sys_get_temp_dir() . "/bioapp_" . $jid . "_" . bin2hex(random_bytes(4)); // Creating a unique temporary working directory per session
 if (!mkdir($workdir, 0700, true)) {
-$err = error_get_last();
-die("Failed to create working directory.");
+	job_error($conn, $jid, "Failed to create working directory.");
 }
 
 // Sequence output directories
@@ -210,7 +209,7 @@ $download_cmd = 'python3 ' . escapeshellarg($download_py)
 $download_out=[];
 $download_rc = run_cmd($download_cmd, $download_out);
 
-// Stopping if exit code is not zero or if files don't exist
+// Stopping if exit code is not zero 
 if ($download_rc !== 0) {
 	job_error($conn, $jid, "Download failed:\n" . implode("\n", $download_out));
 }
@@ -228,7 +227,7 @@ foreach ($download_out as $line) {
 	}
 
 	// The first numeric line is the usable sequence count
-	if ($match_num === 0 && is_numeric($line)) {
+	if ($match_num === 0 && ctype_digit($line)) {
 		$match_num = (int)$line;
 		continue;
 	}

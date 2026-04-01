@@ -1,6 +1,6 @@
 <?php 
 // Adapted from ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
-// Previous results ajax addition page - allows filtering
+// AJAX for retrieving filtered previous job results as JSON
 
 session_start();
 require_once 'set_cookies.php';
@@ -15,6 +15,7 @@ if ($user_hash === '') {
 	echo json_encode(['ok' => false, 'error' => 'Missing user_hash']);
 	die();
 }
+session_write_close();
 
 // Table filters from GET
 $status_filter = isset($_GET['status']) ? trim((string)$_GET['status']) : '';
@@ -43,9 +44,8 @@ try {
 	SELECT
 	jobs.job_id,
 	jobs.job_date,
-	jobs.status, " .
-//	jobs.error_message,
-	"jobs.job_params,
+	jobs.status,
+	jobs.job_params,
 	queries.protein_family,
 	queries.taxon
 	FROM jobs
@@ -63,7 +63,7 @@ try {
 		$params[':status'] = $status_filter;
 	}
 
-	// And search filter
+	// And optional protein/taxon search filter
 	if ($search !== '') {
 		$sql .= " AND (
 			queries.protein_family LIKE :search
@@ -82,20 +82,20 @@ try {
 	// Flattening JSON for more informative jobs table
 	foreach ($jobs as &$job) {
 		// Getting parameters
-		$params = [];
+		$job_params = [];
 		if (!empty($job['job_params'])) {
 			$tmp = json_decode((string)$job['job_params'], true);
 			if (is_array($tmp)) {
-				$params = $tmp;
+				$job_params = $tmp;
 			}
 		}
 		
 		// Setting parameters in the associative array
-		$job['win_size'] = $params['win_size'] ?? 4;
-		$job['plot_outfmt'] = $params['plot_outfmt'] ?? 'png';
-		$job['clust_outfmt'] = $params['clust_outfmt'] ?? 'fasta';
-		$raw_match_num = $params['raw_match_num'] ?? null;
-		$kept_num = $params['kept_num'] ?? null;
+		$job['win_size'] = $job_params['win_size'] ?? 4;
+		$job['plot_outfmt'] = $job_params['plot_outfmt'] ?? 'png';
+		$job['clust_outfmt'] = $job_params['clust_outfmt'] ?? 'fasta';
+		$raw_match_num = $job_params['raw_match_num'] ?? null;
+		$kept_num = $job_params['kept_num'] ?? null;
 
 		if ($raw_match_num !== null && $kept_num !== null) {
 			$job['dataset_summary'] = $raw_match_num . " found / " . $kept_num . " kept";
@@ -105,16 +105,6 @@ try {
 			$job['dataset_summary'] = '';
 		}
 
-		// Short error preview
-//		if (!empty($job['error_message'])) {
-//			$err = (string)$job['error_message'];
-//			$job['error_preview'] = substr($err, 0, 20);
-//			if (strlen($err) > 20) {
-//				$job['error_preview'] .= '...';
-//			}
-//		} else {
-//			$job['error_preview'] = '';
-//		}
 		// No need to send raw JSON
 		unset($job['job_params']);
 	}

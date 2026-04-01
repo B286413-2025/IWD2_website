@@ -1,16 +1,16 @@
 #!/usr/bin/python3
 
-## Performing patmatmotifs on fasta sequences and generating a tsvfile for SQL loading
+## Performing patmatmotifs on sequences from a TSV file  and generating a TSV file for SQL loading
 
 # Modules
-import os, subprocess, sys, argparse
+import subprocess, sys, argparse
 
 # Command line arguments
 parser = argparse.ArgumentParser(
         prog='RunPatMatMotifs',
         description='Motifs searching with EMBOSS patmatmotifs and generating a tsv file for SQL loading')
-parser.add_argument('in_tsv', action='store', help='Input TSV file: accession\torganism\tsequence')
-parser.add_argument('out_sql', action='store', help="Outfile TSV for SQL loading")
+parser.add_argument('in_tsv', action = 'store', help = 'Input TSV file: accession\torganism\tsequence')
+parser.add_argument('out_sql', action = 'store', help = "Outfile TSV for SQL loading")
 args = parser.parse_args()
 
 in_tsv = args.in_tsv
@@ -27,7 +27,7 @@ def run_patmatmotifs(in_fasta):
     """
     command = ["patmatmotifs", "-auto", "-filter", "-stdout", "-rformat2", "excel"]
     # Accepting stdin, capturing output
-    process = subprocess.run(command, input=in_fasta, text=True, capture_output=True)
+    process = subprocess.run(command, input = in_fasta, text = True, capture_output = True)
     # Checking rcode
     if process.returncode != 0:
         print("patmatmotifs failed\n")
@@ -72,7 +72,7 @@ with open(in_tsv, 'r') as fcon:
             try:
                 start = int(start)
                 end = int(end)
-            except:
+            except ValueError:
                 continue
             # Getting the motif sequence
             if start < 1 or end > len(seq):

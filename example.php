@@ -6,6 +6,7 @@
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
+session_write_close();
 
 // Database connection, adapted from class code
 try {
@@ -64,7 +65,7 @@ _HTML;
 include 'cookies.html';
 include 'menuf.php';
 
-// Sticky left menu, infromed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+// Sticky left menu, informed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 echo <<<_NAV
 <div class="page-shell">
 <aside class="page-side-nav">
@@ -79,7 +80,7 @@ echo <<<_NAV
 <li><a href="#alignment_ajax">Alignment Overview</a></li>
 <li><a href="#motif_ajax">Motif Overview</a></li>
 <li><a href="/~s2883992/website/query">Run Your Own Query</a></li>
-<li><a href="#">Back to Top</a>
+<li><a href="#">Back to Top</a></li>
 </ul>
 </aside>
 <main class="page-main">
@@ -95,7 +96,7 @@ echo <<<_HTML2
 <section id="process">
 <h2>Process Outline</h2>
 <ol>
-<li>Sequence retrival from the <a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI protein database</a> </li>
+<li>Sequence retrieval from the <a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI protein database</a> </li>
 <li>Multiple sequence alignment of the retrieved sequences using <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a></li>
 <li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">Plotcon</a> conservation plot showing how sequence conservation changes along the alignment</li>
 <li>Motif scan using <a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> patterns via EMBOSS <a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">patmatmotifs</a></li>
@@ -109,19 +110,19 @@ You can review the results page, inspect the conservation plot, and download the
 <p>The results contain:</p>
 <ul>
 <li><b>Plotcon plot</b>, available to view and download. It shows the conservation score (y) as a function of the residue number (x). Higher scores mean higher similarity and better conservation.</li>
-<li><b>Summary statistics</b> such as the number of sequences, represented organisms, alignment length, and most common motif</li>
-<li><b>Text file results</b> of the MSA and motif hits summary available to download</li>
-<li><b>Alignment and motif overview tables</b> that can be filtered and downloaded</li>
+<li><b>Summary statistics</b> such as the number of sequences, represented organisms, alignment length, and most common motif.</li>
+<li><b>Text file results</b> of the MSA and motif hits summary available to download.</li>
+<li><b>Alignment and motif overview tables</b> that can be filtered and downloaded.</li>
 </ul>
 </section> <hr />
 _HTML2;
 
-// Inserting the example results page
+// Rendering the example results page
 require_once 'results_content.php';
 render_results_content($conn, $job, $jid);
 echo <<<_HTML3
-<hr />
 </main>
+</div>
 </body>
 </html>
 _HTML3

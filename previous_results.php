@@ -12,6 +12,7 @@ if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
+session_write_close();
 
 // MySQL connection, adapted from class code
 try {
@@ -59,7 +60,7 @@ try {
 	die("Could not retrieve previous jobs.");
 }
 
-// HTML infromation
+// HTML information
 echo <<<_HTML
 <!doctype html>
 <html lang="en">
@@ -84,12 +85,12 @@ echo <<<_HEADER
 _HEADER;
 
 // Informative message if no previous results, link to query page
-if ($counts['total'] == 0) {
+if ($counts['total'] === 0) {
 	echo <<<_BODY
 <p><b>No previous jobs were found for this user.</b></p>
 <p><a href='/~s2883992/website/query'>Submit a new query</a></p>
 <p>Or check out this <a href='/~s2883992/website/example'>example dataset</a> for more information.</p>
-</body></html>
+</main></body></html>
 _BODY;
     die();
 }
@@ -105,6 +106,8 @@ echo "</ul></section><hr />";
 
 // Filters - displaying options
 echo <<<_FILTERS
+<section>
+<h2>Filter jobs</h2>
 <div>
 <label>Status:</label>
 <!-- Search by job type -->
@@ -124,6 +127,7 @@ echo <<<_FILTERS
 <div class="previous-table-wrap">
 <div id="prev_results_wrap"></div>
 </div>
+</section>
 _FILTERS;
 
 // JS functionality for dynamic filtering
@@ -138,7 +142,7 @@ echo <<<_JS
 		const search = document.getElementById('prev_search').value.trim();
 	
 		// URL based on filter parameters
-		const url = new URL('/~s2883992/website/previous_results_ajax.php', window.location.href);
+		const url = new URL('/~s2883992/website/previous_results_ajax.php', window.location.origin);
 		if (status !== '') {
 			url.searchParams.set('status', status);
 		}
@@ -152,7 +156,7 @@ echo <<<_JS
 	function renderTable(rows) {
 		const wrap = document.getElementById('prev_results_wrap');
 
-		// No results reponse
+		// No results response
 		if (!rows || rows.length === 0) {
 			wrap.innerHTML = '<p><i>No jobs match the current filter.</i></p>';
 			return;
@@ -242,5 +246,5 @@ echo <<<_JS
 </script>
 _JS;
 
-echo "</body></html>";
+echo "</main></body></html>";
 ?>

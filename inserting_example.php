@@ -282,7 +282,7 @@ if ($png_files !== false) {
 			$plot_path = $a;
 		} else {
 			// Keeping the newest file
-			if (filemtime($a) > filemtime($plot_patj)) {
+			if (filemtime($a) > filemtime($plot_path)) {
 				$plot_path = $a;
 			}
 		}
@@ -318,8 +318,8 @@ try {
 		");
 	// Indicating specific data types for the variables
 	$stmt->bindValue(':jid', (int)$jid, PDO::PARAM_INT);
-	$stmt->bindValue(':mime', 'image/' . $img_fmt , PDO::PARAM_STR);
-    	$stmt->bindValue(':fname', basename($plot_path, PDO::PARAM_STR));
+	$stmt->bindValue(':mime', 'image/' . $img_fmt, PDO::PARAM_STR);
+    	$stmt->bindValue(':fname', basename($plot_path), PDO::PARAM_STR);
     	$stmt->bindValue(':params', json_encode(['winsize' => $win_size]), PDO::PARAM_STR);
     	$stmt->bindValue(':blob', $png_bytes, PDO::PARAM_LOB);
 	$stmt->execute();
@@ -347,6 +347,7 @@ $pat_py = $base_dir . "/py_scripts/patmat_to_sql.py";
 $motif_hits_tsv = $workdir . "/motif_hits_job_" . (int)$jid . ".tsv";
 
 // Running python
+$pat_out = [];
 $pat_cmd = "python3 " . escapeshellarg($pat_py) . " " .
            escapeshellarg($seq_tsv) . " " .
            escapeshellarg($motif_hits_tsv);

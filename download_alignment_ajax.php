@@ -1,6 +1,6 @@
 <?php 
 // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
-// Script to download table results manipulated by AJAX (echoing to file instead of returning JSON)
+// Script to download the currently filtered alignment table as TSV
 
 session_start();
 require_once 'set_cookies.php';
@@ -13,6 +13,7 @@ if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
+session_write_close();
 
 // jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
@@ -123,11 +124,10 @@ try {
 	$stmt->execute([$jid, $user_hash]);
 	$status = $stmt->fetchColumn();
 
-	// Stopping if not found
+	// Return 404 if the job does not exist or is not visible to this user
 	if (!$status) {
 		http_response_code(404);
-		require __DIR__ . '/not_found.php';
-		die();
+		die("Not found");
 	}
 	
 	// Or not complete
@@ -190,7 +190,7 @@ try {
 
 	// File header row
 	$header_fields = $fields;
-	// Optional parameters
+	// Optional aligned sequence
 	if ($include_aligned) {
 		$header_fields[] = 'aligned_sequence';
 	}

@@ -1,6 +1,6 @@
 <?php 
 // Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
-// Script to download the AJAX motif table (echoing to file instead of JSON transmission)
+// Script to export the current motif table view as TSV
 session_start();
 require_once 'set_cookies.php';
 require_once 'login.php';
@@ -12,6 +12,7 @@ if ($user_hash === '') {
 	http_response_code(500);
 	die("Missing user_hash");
 }
+session_write_close();
 
 // jid
 $jid = isset($_GET['job_id']) ? (int)$_GET['job_id'] : 0;
@@ -49,7 +50,12 @@ if (strlen($motif_like) > 255) {
 }
 
 // Minimal score
-$min_score = isset($_GET['min_score']) && $_GET['min_score'] !== '' ? (float)$_GET['min_score'] : null;
+$min_score = null;
+if (isset($_GET['min_score']) && $_GET['min_score']) {
+	if (is_numeric($_GET['min_score'])) {
+		$min_score = (float)$_GET['min_score'];
+	}
+}
 
 // Mapping names for SQL
 $allowed_fields = [
@@ -108,11 +114,10 @@ try {
 	$stmt->execute([$jid, $user_hash]);
 	$status = $stmt->fetchColumn();
 
-	// Failing if not found
+	// Return 404 if the job does not exist or is not visible to this user
 	if (!$status) {
 		http_response_code(404);
-		require __DIR__ . '/not_found.php';
-		die();
+		die("Not found");
 	}
 	
 	// Or complete

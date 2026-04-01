@@ -2,7 +2,7 @@
    Protein Conservation Analysis - Main Stylesheet
    ========================================================= */
 
-/* Taken from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new */
+/* Adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new */
 
 :root {
   --bg-page: #f8f9fb;
@@ -123,7 +123,6 @@ article {
 }
 
 .page-shell {
-  max-width: var(--content-width);
   display: grid;
   gap: 1rem;
   align-items: start;
@@ -139,8 +138,10 @@ article {
   background: var(--bg-panel);
   border: 1px solid var(--border-panel);
   border-radius: var(--radius);
-  padding: 1rem;
   padding: 0.75rem;
+  max-height: calc(100vh - var(--nav-height) - 2rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .page-side-nav h2 {
@@ -445,10 +446,17 @@ tr:nth-child(even) td {
 }
 
 /* AJAX-rendered tables */
+
 .ajax-table {
   width: 100%;
-  table-layout: fixed;
 }
+
+.ajax-table th,
+.ajax-table td {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 
 /* Give the aligned-sequence column a fixed share of the table */
 .ajax-table col.sequence-col {
@@ -554,9 +562,18 @@ pre {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0.8rem 0;
+}
+
+.button-group form {
+  margin: 0;
+}
+
+.plot-button {
   align-items: center;
   justify-content: center;
-  margin: 0.8rem 0;
 }
 
 /* =========================================================
@@ -649,56 +666,35 @@ pre {
   text-align: center;
 }
 
-.ajax-table {
-  width: 100%;
-}
-
-.ajax-table th,
-.ajax-table td {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
 /* Responsive fallback for screen width */
 @media (max-width: 1100px) {
   .ajax-controls-grid {
     grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
 }
-
-@media (max-width: 700px) {
-  .ajax-controls-grid {
-    grid-template-columns: 1fr;
+  
+  .update-button {
+    background: var(--button-update);
+    color: #fff;
   }
 
-  .ajax-check label {
-    white-space: normal;
+  .update-button:hover {
+    background: var(--button-update-hover);
   }
-}
-
-
-.update-button {
-  background: var(--button-update);
-  color: #fff;
-}
-
-.update-button:hover {
-  background: var(--button-update-hover);
-}
 
 .button-link.download-button {
   background: var(--button-bg);
   color: #fff;
-}
+  }
 
 .button-link.download-button:hover {
   background: var(--button-bg-hover);
-}
+  }
 
 .ajax-status {
   font-weight: 600;
   color: var(--text-muted);
-}
+  }
 
 /* =========================================================
    Misc
@@ -768,6 +764,8 @@ a[href="#"] {
 }
 
 @media (max-width: 700px) {
+
+
   body {
     padding-left: 0.7rem;
     padding-right: 0.7rem;
@@ -796,6 +794,11 @@ a[href="#"] {
     width: 24ch;
     max-width: 24ch;
   }
+  
+  .ajax-controls-grid {
+   grid-template-columns: 1fr;
+  }
+  
 }
 
 /* =========================================================
@@ -853,7 +856,6 @@ a[href="#"] {
   justify-content: center;
   min-height: 42px;
   min-width: 120px;
-  border-radius: 6px;
   font-size: 0.95rem;
   font-weight: 600;
 }

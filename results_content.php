@@ -93,8 +93,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		echo "</p>";
 
 		// Current filtering thresholds paragraph
-		echo "<p>";
-		echo "Current filtering thresholds: ";
+		echo "<p>Current filtering thresholds: </p>";
 		echo "<ul>";
 		if ($minlen !== null) {
 			echo "<li><b>Minimum length</b> = " . htmlspecialchars((string)$minlen) . " aa</li>";
@@ -114,7 +113,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		if ($max_kept !== null) {
 			echo "<li><b>Maximum retained sequences</b> = " . htmlspecialchars((string)$max_kept) . "</li>";
 		}
-		echo "</ul></p>";
+		echo "</ul>";
 		echo "</section><hr />";
 	}
 
@@ -188,7 +187,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		}
 
 		// Download links with get_output.php
-		echo "<div class='button-group'>";
+		echo "<div class='button-group plot-button'>";
 		// png default
 		if ($png_row) {
 			$oid = (int)$png_row['output_id'];
@@ -198,10 +197,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		if ($req_row && $requested_fmt !== 'png') {
 			$oid = (int)$req_row['output_id'];
 			$fname = htmlspecialchars((string)($req_row['file_name'] ?? 'requested_plot'));
-			echo "<div>";
 			echo "<a class='button-link secondary' href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download requested format</a>";
-			echo "</div>";
-			echo "<div><small>(" . $fname . ")</small></div>";
 		}
 		echo "</div>";
 	}
@@ -348,8 +344,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	Table filtering options: # rows, sorting values, sort direction, organism name
 	-->
 	<div>
-		<label>Rows (max 1000)</label>
-		<input type='number' id='aln_limit' value='50' min='1' max='1000'>
+		<label>Rows (max 500)</label>
+		<input type='number' id='aln_limit' value='50' min='1' max='500'>
 	</div>
 	<!--
 	Sorting values: gap fraction, gap count, sequence length, organism, accession
@@ -530,7 +526,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 					}
 				}
 
-				// Optional fasta sequence
+				// Optional aligned sequence
 				if (showAligned) {
 					// Checking for aligned sequence and printing nicely
 					if (r && r['aligned_sequence']) {
@@ -599,8 +595,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	-->
 	<div class="ajax-controls-grid">
 	<div>
-		<label>Rows (max 1000)</label>
-		<input type="number" id="mot_limit" value="50" min="1" max="1000">
+		<label>Rows (max 500)</label>
+		<input type="number" id="mot_limit" value="50" min="1" max="500">
 	</div>
 	<!--
 	Srting fields - motif name, organism, accession, start and end position, score

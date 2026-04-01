@@ -32,13 +32,14 @@ parser.add_argument("--max_kept", type=int, default=500)
 
 args = parser.parse_args()
 
-# Out files to MySQL and ClustalO, respectively
+# Out files to MySQL loading and ClustalO
 outdir = args.outdir
 os.makedirs(outdir, exist_ok=True)
 tsv_file = os.path.join(outdir, "example_record.tsv")
 fa_file  = os.path.join(outdir, "example_record.fasta")
 
 # Entrez parameters
+## TODO: probably shouldn't hard-code
 Entrez.email = "dandush1001@gmail.com"
 Entrez.api_key = "237a0a96e905e613335cbcffdd23be96e209"
 
@@ -47,7 +48,7 @@ prot_fam = args.protein.lower()
 tax_group = args.taxon.lower()
 query = f"{prot_fam}[Prot] AND {tax_group}[Organism] NOT partial"
 
-# searching, limiting to 1000 results
+# searching, limiting results
 search = Entrez.esearch(db='protein', term=query, retmax=args.retmax)
 
 # Processing results, checking for number of matches
@@ -82,7 +83,8 @@ with open(tsv_file, 'w') as tsv, open(fa_file, 'w') as fa:
         if len(seq) > args.maxlen:
             continue
 
-        # Ambiguous residues
+        # Ambiguous residues (X)
+        # TODO: possibly add the rest
         if (seq.lower().count('x') / len(seq)) > args.max_x_frac:
             continue
 
@@ -104,6 +106,8 @@ with open(tsv_file, 'w') as tsv, open(fa_file, 'w') as fa:
         # Updating counters
         kept_num += 1
         total_aa += len(seq)
+
+handle.close()
 
 # Print number of retained sequences
 print(kept_num)

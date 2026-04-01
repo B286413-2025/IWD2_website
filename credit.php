@@ -1,8 +1,9 @@
 <?php
 // Statement of credits
-// Detailing external resources used and AI asisstance
+// Detailing external resources used and AI assistance
 session_start();
 require_once 'set_cookies.php';
+session_write_close();
 
 echo <<<_HTML
 <!doctype html>
@@ -19,7 +20,7 @@ _HTML;
 include 'cookies.html';
 include 'menuf.php';
 
-// Sticky left menu, infromed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
+// Sticky left menu, informed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 echo <<<_LAYOUT
 <div class="page-shell">
 <aside class="page-side-nav">
@@ -82,14 +83,15 @@ debugging, code explanation, and some code generation during development.
 <li>Image output storage and handling in MySQL</li>
 <li>AJAX table rendering</li>
 <li>Cookie-based user identification</li>
-<li>CSS inital script and refinement</li>
+<li>CSS initial script and refinement</li>
 </ul>
+</li>
 </ul>
 
 <p><b>Important note:</b><br />
 All AI-generated suggestions were reviewed, tested, and modified if necessary before inclusion.
 <br />Some generated code was rejected or corrected during development. 
-<br/ >Non-modified code is credited in scripts, which can be seen in my personal <a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
+<br />Non-modified code is credited in scripts, which can be seen in my personal <a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 </section>
 <hr />
@@ -113,7 +115,7 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 <a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI protein database</a> - for sequence retrieval
 </li>
 <li>
-<a href="https://www.ncbi.nlm.nih.gov/books/NBK179288/" target="_blank">NCBI Entrez Direct / E-utilities</a> documentation - for sequence retrieval concepts
+<a href="https://www.ncbi.nlm.nih.gov/books/NBK179288/" target="_blank">NCBI Entrez Direct / E-utilities documentation</a> - for sequence retrieval concepts
 </li>
 <li>
 <a href="https://www.ncbi.nlm.nih.gov/genbank/internatprot_nomenguide/#2-formats-for-protein-names" target="_blank">NCBI protein naming conventions</a> 
@@ -135,7 +137,7 @@ All AI-generated suggestions were reviewed, tested, and modified if necessary be
 <a href="https://stackoverflow.com/questions" target="_blank">Stack Overflow discussions</a> - for specific coding questions (indicated in-script)
 </li>
 <li>
-<a href="https://www.w3schools.com/">W3 Schools</a> - for PHP, CSS, SQL and HTML examples and ideas
+<a href="https://www.w3schools.com/" target="_blank">W3 Schools</a> - for PHP, CSS, SQL and HTML examples and ideas
 </li>
 <li>
 <a href="https://www.youtube.com/watch?v=kUMe1FH4CHE" target="_blank">freeCodeCamp HTML tutorial</a> - for basic HTML ideas
@@ -173,17 +175,17 @@ Stack Overflow discussion</a>
 <li>
 Background processing while presenting loading page informed by: 
 <a href="https://stackoverflow.com/questions/4626860/how-can-i-run-a-php-script-in-the-background-after-a-form-is-submitted" target="_blank">
-Stack OverFlow discussion</a>
+Stack Overflow discussion</a>
 </li>
 <li>
 Loading page automatic refresh strategy informed by: 
 <a href="https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form" target="_blank">
-Stack OverFlow discussion</a>
+Stack Overflow discussion</a>
 </li>
 <li>
 Fixed main menu informed by: 
 <a href="https://www.w3schools.com/howto/howto_css_fixed_menu.asp" target="_blank">
-W3 Schools entry</a>
+W3Schools entry</a>
 </li>
 </ul>
 </section>
@@ -204,6 +206,7 @@ W3 Schools entry</a>
 </section>
 <hr />
 </main>
+</div>
 </body>
 </html>
 _BODY;
