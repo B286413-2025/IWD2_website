@@ -91,7 +91,7 @@ debugging, code explanation, and some code generation during development.
 <p><b>Important note:</b><br>
 All AI-generated suggestions were reviewed, tested, and modified where necessary before inclusion.
 <br>Some generated code was rejected or corrected during development.
-<br>Non-modified code is credited directly in scripts, available in my <a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
+<br>Non-modified code is credited directly in scripts, available in my <a href="https://github.com/B286413-2025/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 </section>
 <hr>

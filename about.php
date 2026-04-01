@@ -95,7 +95,7 @@ All thresholds and retained counts are stored alongside the job parameters.
 The main pages of the site, connected via session-based ID.
 <br>These pages primarily wrap the background scripts described in the next section.
 <br>Full source code is available in my
-<a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
+<a href="https://github.com/B286413-2025/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 <ul>
 <li><b>front</b> - landing page with site overview and navigation</li>
@@ -117,7 +117,7 @@ The main pages of the site, connected via session-based ID.
 <p>
 Background PHP scripts that support page transitions, data retrieval, and overall site functionality.
 <br>Full scripts are available in my 
-<a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
+<a href="https://github.com/B286413-2025/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 <ul>
 <li><b>set_cookies.php</b> - creates and hashes the browser‑level cookie used for job ownership</li>
@@ -139,7 +139,7 @@ Background PHP scripts that support page transitions, data retrieval, and overal
 Python scripts used for data retrieval and analysis. Each script produces a TSV file suitable for SQL loading,
 along with any associated outputs.
 <br>Full scripts are available in my
-<a href="https://github.com/algra2001/IWD2_website/tree/master/py_scripts" target="_blank">GitHub repository</a>.
+<a href="https://github.com/B286413-2025/IWD2_website/tree/master/py_scripts" target="_blank">GitHub repository</a>.
 </p>
 <ul>
 <li><b>download_sequences.py</b> - retrieves sequence data from NCBI</li>
@@ -195,7 +195,7 @@ The following diagram summarises the current database structure used by the webs
 
 <p>
 The full SQL script used to generate the database, including indexing and constraints, is available in my
-<a href="https://github.com/algra2001/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">GitHub repository</a>.
+<a href="https://github.com/B286413-2025/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">GitHub repository</a>.
 </p>
 </section>
 <hr>
