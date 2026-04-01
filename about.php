@@ -92,6 +92,7 @@ The applied thresholds and observed retained counts are stored along with other 
 <h2>3. Main Pages</h2>
 <p>
 The main pages featured on this site, connected by session ID.
+<br />These are mainly wrapper pages rendering background scripts details in the next section.
 <br />Full scripts can be seen in my personal 
 <a href="https://github.com/algra2001/IWD2_website", target="_blank">GitHub repository</a>.
 </p>

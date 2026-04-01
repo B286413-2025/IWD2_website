@@ -480,6 +480,12 @@ tr:nth-child(even) td {
   line-height: 1.2;
 }
 
+.ajax-note {
+  margin: 0.4rem 0 0.8rem 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
 /* =========================================================
    Code / pre
    ========================================================= */
@@ -672,29 +678,49 @@ pre {
     grid-template-columns: repeat(2, minmax(200px, 1fr));
   }
 }
-  
-  .update-button {
-    background: var(--button-update);
-    color: #fff;
-  }
 
-  .update-button:hover {
-    background: var(--button-update-hover);
-  }
+/* Special buttons styles */ 
+/* Update */
+.update-button {
+  background: var(--button-update);
+  color: #fff;
+}
+
+.update-button:hover {
+  background: var(--button-update-hover);
+}
+
+/* Download */
 
 .button-link.download-button {
   background: var(--button-bg);
   color: #fff;
-  }
+}
 
 .button-link.download-button:hover {
   background: var(--button-bg-hover);
-  }
+}
 
 .ajax-status {
   font-weight: 600;
   color: var(--text-muted);
-  }
+}
+
+/* Reset */
+
+.reset-button {
+  background: #6b7280;
+  color: #fff;
+}
+
+.reset-button:hover {
+  background: #4b5563;
+}
+
+/* Filter information */
+.ajax-controls-grid label[title] {
+  cursor: help;
+}
 
 /* =========================================================
    Misc

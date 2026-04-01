@@ -106,24 +106,33 @@ echo "</ul></section><hr />";
 
 // Filters - displaying options
 echo <<<_FILTERS
-<section>
+<section class="history-panel" id="job_filters">
 <h2>Filter jobs</h2>
+
+<div class="ajax-controls-grid">
 <div>
-<label>Status:</label>
+<label title="Filter jobs by their current processing status.">Status:</label>
 <!-- Search by job type -->
-<select id='prev_status'>
+<select id='prev_status' title="Show all jobs, or only pending, complete, or error jobs.">
 	<option value=''>All</option>
 	<option value='pending'>Pending</option>
 	<option value='complete'>Complete</option>
 	<option value='error'>Error</option>
 </select>
+</div>
 <!-- Or by protein/taxon pattern -->
-<label>Search protein/taxon:</label>
-<input type='text' id='prev_search'>
-<button type='button' id='prev_update'>Update</button>
+<div>
+<label title="Search previous jobs by protein family or taxonomic group.">Search protein/taxon:</label>
+<input type='text' id='prev_search' placehold='(optional)' title="Type part of a protein family name or taxon to filter the table.">
+</div>
+</div>
+<div class="ajax-actions-row">
+<button type='button' id='prev_update' class='update-button'>Update</button>
+<button type='button' id='prev_reset' class='reset-button'>Reset Filters</button>
+<span id='prev_status_msg' class="ajax-status"></span>
 </div>
 
-<div id='prev_status_msg' class="ajax-status"></div>
+<div id='prev_status_msg' class="previous-table-wrap"></div>
 <div class="previous-table-wrap">
 <div id="prev_results_wrap"></div>
 </div>
@@ -167,17 +176,16 @@ echo <<<_JS
 		let html = '<table class="previous-table">';
 		// Headers
 		html += '<tr>';
-		html += '<th>Job ID</th>';
-		html += '<th>Date</th>';
-		html += '<th>Protein</th>';
-		html += '<th>Taxon</th>';
-		html += '<th>Status</th>';
-		html += '<th>Window Size</th>';
-		html += '<th>Plot Format</th>';
-		html += '<th>MSA Format</th>';
-		html += '<th>Link</th>';
-		html += '<th>Dataset</th>';
-//		html += '<th>Error Preview</th>';
+		html += '<th title="Internal job ID used by the website.">Job ID</th>';
+		html += '<th title="Date and time when the job was created.">Date</th>';
+		html += '<th title="Protein family used in the query.">Protein</th>';
+		html += '<th title="Taxonomic group used in the query.">Taxon</th>';
+		html += '<th title="Current job status.">Status</th>';
+		html += '<th title="Plotcon window size used for this job.">Window Size</th>';
+		html += '<th title="Requested plotcon output format.">Plot Format</th>';
+		html += '<th title="Requested Clustal Omega download format.">MSA Format</th>';
+		html += '<th title="Open the job page. Pending jobs open the loading page, completed or failed jobs open the results page.">Link</th>';
+		html += '<th title="Summary of how many matching records were found and how many were retained after filtering.">Dataset</th>';
 		html += '</tr>';
 
 		// Table rows
@@ -215,6 +223,12 @@ echo <<<_JS
 		wrap.innerHTML = html;
 	}
 
+	// Reset function
+	function resetPreviousResultsFilters() {
+		document.getElementById('prev_status').value = '';
+		document.getElementById('prev_search').value = '';
+	}
+
 	// Async function to update table
 	async function updatePreviousResults() {
 		const msg = document.getElementById('prev_status_msg');
@@ -239,8 +253,12 @@ echo <<<_JS
 		}
 	}
 
-	// Updating on click
+	// Updating or resetting on click
 	document.getElementById('prev_update').addEventListener('click', updatePreviousResults);
+	document.getElementById('prev_reset').addEventListener('click', function () {
+		resetPreviousResultsFilters();
+		updatePreviousResults();
+	});
 	updatePreviousResults();
 })();
 </script>

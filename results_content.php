@@ -344,15 +344,15 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	Table filtering options: # rows, sorting values, sort direction, organism name
 	-->
 	<div>
-		<label>Rows (max 500)</label>
-		<input type='number' id='aln_limit' value='50' min='1' max='500'>
+		<label title="Maximum number of rows to display after filtering.">Rows (max 500)</label>
+		<input type='number' id='aln_limit' value='50' min='1' max='500' title="Choose how many rows to display in the table.">
 	</div>
 	<!--
 	Sorting values: gap fraction, gap count, sequence length, organism, accession
 	-->
 	<div>
-		<label>Sort Field</label>
-		<select id='aln_sort'>
+		<label title="Choose the field used to sort the table.">Sort Field</label>
+		<select id='aln_sort' title="Sort the table by this field.">
 		<option value='gap_fraction' selected>Gap Fraction</option>
 		<option value='gap_count'>Gap Count</option>
 		<option value='raw_len'>Sequence Length</option>
@@ -361,8 +361,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		</select>
 	</div>
 	<div>
-		<label>Direction</label>
-		<select id='aln_dir'>
+		<label title="Choose ascending or descending order.">Direction</label>
+		<select id='aln_dir' title="Sort ascending or descending.">
 		<option value='desc' selected>Descending</option>
 		<option value='asc'>Ascending</option>
 		</select>
@@ -371,16 +371,16 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	Organism partial match search
 	-->
 	<div>
-		<label>Organism Contains</label>
-		<input type='text' id='aln_organism' placeholder='(optional)'>
+		<label title="Show only rows where the organism name contains this text.">Organism Contains</label>
+		<input type='text' id='aln_organism' placeholder='(optional)' title="Partial organism-name search.">
 	</div>
 	<div>
-		<label>Minimum Gap Count</label>
-		<input type='number' id='aln_min_gap_count' min='0' step='1' placeholder='(optional)'>
+		<label title="Show only rows with at least this amount of gap characters (-).">Minimum Gap Count</label>
+		<input type='number' id='aln_min_gap_count' min='0' step='1' placeholder='(optional)' title="Gap count = number of gap characters in the aligned sequence.">
 	</div>
 	<div>
-		<label>Minimum Gap Fraction</label>
-		<input type='number' id='aln_min_gap_fraction' min='0' max='1' step='0.0001' placeholder='(optional)'>
+		<label title="Show only rows with at least this fraction of gaps.">Minimum Gap Fraction</label>
+		<input type='number' id='aln_min_gap_fraction' min='0' max='1' step='0.0001' placeholder='(optional)' title="Gap fraction = gap count divided by aligned sequence length.">
 	</div>
 	</div>
 	<!--
@@ -388,21 +388,31 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	-->
 	<div class="ajax-fields-row">
 		<b>Show fields:</b>
-		<label><input type='checkbox' class='aln_field' value='organism' checked> Organism</label>
-		<label><input type='checkbox' class='aln_field' value='accession' checked> Accession</label>
-		<label><input type='checkbox' class='aln_field' value='raw_len' checked> Sequence length</label>
-		<label><input type='checkbox' class='aln_field' value='gap_count' checked> Gap count</label>
-		<label><input type='checkbox' class='aln_field' value='gap_fraction' checked> Gap fraction</label>
-		<label><input type='checkbox' id='show_aligned'> Show Aligned Sequence</label>
+		<label title="Scientific name of the source organism."><input type='checkbox' class='aln_field' value='organism' checked> Organism</label>
+		<label title="NCBI protein accession."><input type='checkbox' class='aln_field' value='accession' checked> Accession</label>
+		<label title="Length of the original unaligned protein sequence.">
+		<input type='checkbox' class='aln_field' value='raw_len' checked> Sequence length
+		</label>
+		<label title="Number of gap characters in the aligned sequence.">
+		<input type='checkbox' class='aln_field' value='gap_count' checked> Gap count
+		</label>
+		<label title="Fraction of the aligned sequence made of gaps.">
+		<input type='checkbox' class='aln_field' value='gap_fraction' checked> Gap fraction
+		</label>
+		<label title="Show the aligned sequence as an extra column."><input type='checkbox' id='show_aligned'> Show Aligned Sequence</label>
 	</div>
 	<!--
-	Action buttons: update table and download current table
+	Action buttons: update table, reset table and download current table
 	-->
 	<div class="ajax-actions-row">
 		<button type='button' id='aln_update' class='update-button'>Update Table</button>
+		<button type='button' id='aln_reset' class='reset-button'>Reset Filters</button>
 		<a id='aln_download' class='button-link download-button' href='#'>Download Current Table (TSV)</a>
-		<span id='aln_status' class='ajax-status'></span>
 	</div>
+	<p class="ajax-note">
+	Click accession numbers to open the NCBI protein record, and organism names to search NCBI Taxonomy.
+	</p>
+	<div id='aln_status' class='ajax-status'></div>
 	<div id='aln_table_wrap'></div>
 	</div>
 	</article>
@@ -521,6 +531,10 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 					if (f === 'accession' && val !== '') {
 						const ncbiUrl = 'https://www.ncbi.nlm.nih.gov/protein/' + encodeURIComponent(val);
 						html += '<td><a href="' + ncbiUrl + '" target="_blank">' + val + '</a></td>';
+					} else if (f === 'organism' && val !== '') {
+						const ncbiTaxUrl = 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name=' + encodeURIComponent(val);
+						html += '<td><a href="' + ncbiTaxUrl + '" target="_blank">' + val + '</a></td>';
+
 					} else {
 						html += '<td>' + val + '</td>';
 					}
@@ -541,6 +555,23 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			html += '</table>';
 			wrap.innerHTML = html;
 		}
+		
+		// Function to reset table settings
+		function resetAlignmentFilters() {
+			// Default values
+			document.getElementById('aln_limit').value = 50;
+			document.getElementById('aln_sort').value = 'gap_fraction';
+			document.getElementById('aln_dir').value = 'desc';
+			document.getElementById('aln_organism').value = '';
+			document.getElementById('aln_min_gap_count').value = '';
+			document.getElementById('aln_min_gap_fraction').value = '';
+			document.getElementById('show_aligned').checked = false;
+
+			document.querySelectorAll('.aln_field').forEach(function(box) {
+				box.checked = ['organism', 'accession', 'raw_len', 'gap_count', 'gap_fraction'].includes(box.value);
+			});
+		}
+
 		// async funtcion to update table upon promises
 		async function update() {
 			// Selected fields
@@ -577,9 +608,13 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			}
 		}
 
-		// Updataing upon click
+		// Updataing and reseting upon click
 		document.getElementById('aln_update').addEventListener('click', update);
-		update();
+		document.getElementById('aln_reset').addEventListener('click', function () {
+			resetAlignmentFilters();
+			update();
+		});
+		update()
 	})();
 	</script>
 	_JS;
@@ -595,15 +630,15 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	-->
 	<div class="ajax-controls-grid">
 	<div>
-		<label>Rows (max 500)</label>
-		<input type="number" id="mot_limit" value="50" min="1" max="500">
+		<label title="Maximum number of rows to display after filtering.">Rows (max 500)</label>
+		<input type="number" id="mot_limit" value="50" min="1" max="500" title="Choose how many rows to display in the table.">
 	</div>
 	<!--
-	Srting fields - motif name, organism, accession, start and end position, score
+	Sorting fields - motif name, organism, accession, start and end position, score
 	-->
 	<div>
-		<label>Sort Field</label>
-		<select id="mot_sort">
+		<label title="Choose the field used to sort the table.">Sort Field</label>
+		<select id="mot_sort" title="Sort the table by this field.">
 		<option value="motif_name" selected>Motif</option>
 		<option value="organism">Organism</option>
 		<option value="accession">Accession</option>
@@ -613,8 +648,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		</select>
 	</div>
 	<div>
-		<label>Direction</label>
-		<select id="mot_dir">
+		<label "Choose ascending or descending order.">Direction</label>
+		<select id="mot_dir" title="Sort ascending or descending.">
 		<option value="asc" selected>Ascending</option>
 		<option value="desc">Descending</option>
 		</select>
@@ -623,19 +658,19 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	Partial organism pattern filter
 	-->
 	<div>
-		<label>Organism contains</label>
-		<input type="text" id="mot_organism" placeholder="(optional)">
+		<label title="Show only rows where the organism name contains this text.">Organism contains</label>
+		<input type="text" id="mot_organism" placeholder="(optional)" title="Partial organism-name search.">
 	</div>
 	<!-- 
 	Partial motif name pattern filter
 	-->
 	<div>
-		<label>Motif contains</label>
-		<input type="text" id="mot_name" placeholder="(optional)">
+		<label title="Show only rows where the motif name contains this text.">Motif contains</label>
+		<input type="text" id="mot_name" placeholder="(optional)" title="Partial motif-name search.">
 	</div>
 	<div>
-		<label>Minimum score</label>
-		<input type="number" id="mot_score" step="0.01" placeholder="(optional)">
+		<label title="Show only rows with score greater than or equal to this value.">Minimum score</label>
+		<input type="number" id="mot_score" step="0.01" placeholder="(optional)" title="Minimum motif score to include.">
 	</div>
 	</div>
 	<!--
@@ -643,22 +678,28 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	-->
 	<div class="ajax-fields-row">
 		<b>Show fields:</b>
-		<label><input type="checkbox" class="mot_field" value="organism" checked> Organism</label>
-		<label><input type="checkbox" class="mot_field" value="accession" checked> Accession</label>
-		<label><input type="checkbox" class="mot_field" value="motif_name" checked> Motif</label>
-		<label><input type="checkbox" class="mot_field" value="start_pos" checked> Start</label>
-		<label><input type="checkbox" class="mot_field" value="end_pos" checked> End</label>
-		<label><input type="checkbox" class="mot_field" value="score" checked> Score</label>
-		<label><input type="checkbox" class="mot_field" value="matched_sequence"> Matched Sequence</label>
+		<label title="Scientific name of the source organism."><input type="checkbox" class="mot_field" value="organism" checked> Organism</label>
+		<label title="NCBI protein accession."><input type="checkbox" class="mot_field" value="accession" checked> Accession</label>
+		<label title="Name of the detected motif."><input type="checkbox" class="mot_field" value="motif_name" checked> Motif</label>
+		<label title="Start position of the motif hit."><input type="checkbox" class="mot_field" value="start_pos" checked> Start</label>
+		<label title="End position of the motif hit."><input type="checkbox" class="mot_field" value="end_pos" checked> End</label>
+		<label title="Score reported for the motif hit."><input type="checkbox" class="mot_field" value="score" checked> Score</label>
+		<label title="Matched residue sequence for the hit.">
+		<input type="checkbox" class="mot_field" value="matched_sequence"> Matched Sequence
+		</label>
 	</div>
 	<!--
 	Action buttons
 	-->
 	<div class="ajax-actions-row">
 	<button type="button" id="mot_update" class="update-button">Update Table</button>
+	<button type="button" id="mot_reset" class="reset-button">Reset Filters</button>
 	<a id="mot_download" class="button-link download-button" href="#">Download Current Table (TSV)</a>
-	<span id="mot_status" class="ajax-status"></span>
 	</div>
+	<p class="ajax-note">
+	Click accession numbers to open the NCBI protein record, and organism names to search NCBI Taxonomy.
+	</p>
+	<div id="mot_status" class="ajax-status"></div>
 	<div id="mot_table_wrap"></div>
 	</div>
 	</article>
@@ -721,83 +762,105 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			return url;
 		}
 
-	// Function to render the table
-	function renderMotifTable(rows, fields) {
-		const wrap = document.getElementById('mot_table_wrap');
+		// Function to render the table
+		function renderMotifTable(rows, fields) {
+			const wrap = document.getElementById('mot_table_wrap');
 
-		// If no results
-		if (!rows || rows.length === 0) {
+			// If no results
+			if (!rows || rows.length === 0) {
 			wrap.innerHTML = '<p><i>No rows to display.</i></p>';
-			return;
-		}
+				return;
+			}
 
-		// Building the table in HTML syntax based on returned results
-		let html = '<table class="ajax-table">';
-		// Header row
-		html += '<tr>';
-		html += fields.map(f => '<th>' + (fieldLabels[f] || f) + '</th>').join('');
-		html += '</tr>';
+			// Building the table in HTML syntax based on returned results
+			let html = '<table class="ajax-table">';
+			// Header row
+			html += '<tr>';
+			html += fields.map(f => '<th>' + (fieldLabels[f] || f) + '</th>').join('');
+			html += '</tr>';
 		
-		// Content rows
-		for (const r of rows) {
-		html += '<tr>';
-			// And cells
-			for (const f of fields) {
-				const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
-				if (f === 'accession' && val !== '') {
-					const ncbiUrl = 'https://www.ncbi.nlm.nih.gov/protein/' + encodeURIComponent(val);
-					html += '<td><a href="' + ncbiUrl + '" target="_blank">' + val + '</a></td>';
-				} else {
-					html += '<td>' + val + '</td>';
+			// Content rows
+			for (const r of rows) {
+			html += '<tr>';
+				// And cells
+				for (const f of fields) {
+					const val = (r && r[f] !== undefined && r[f] !== null) ? String(r[f]) : '';
+					if (f === 'accession' && val !== '') {
+						const ncbiUrl = 'https://www.ncbi.nlm.nih.gov/protein/' + encodeURIComponent(val);
+						html += '<td><a href="' + ncbiUrl + '" target="_blank">' + val + '</a></td>';
+					} else if (f === 'organism' && val !== '') {
+						const ncbiTaxUrl = 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name=' + encodeURIComponent(val);
+						html += '<td><a href="' + ncbiTaxUrl + '" target="_blank">' + val + '</a></td>';
+					} else {
+						html += '<td>' + val + '</td>';
+					}
 				}
+			html += '</tr>';
 			}
-		html += '</tr>';
+	
+			html += '</table>';
+			wrap.innerHTML = html;
 		}
 
-		html += '</table>';
-		wrap.innerHTML = html;
-	}
+		// Function to reset the table filtering
+		function resetMotifFilters() {
+		// Defaults
+			document.getElementById('mot_limit').value = 50;
+			document.getElementById('mot_sort').value = 'motif_name';
+			document.getElementById('mot_dir').value = 'asc';
+			document.getElementById('mot_organism').value = '';
+			document.getElementById('mot_name').value = '';
+			document.getElementById('mot_score').value = '';
 	
-	// Asynch function to update the table upon motif promise
-	async function updateMotifs() {
-		// Filters and status
-		const fields = selectedMotifFields();
-		const status = document.getElementById('mot_status');
-		status.textContent = 'Loading...';
-
-		// Updating download link
-		const dl = document.getElementById('mot_download');
-		dl.href = buildMotifUrl('/~s2883992/website/download_motif_ajax.php').toString();
-	
-		// Trying to fetch
-		try {
-			const url = buildMotifUrl('/~s2883992/website/motif_ajax.php');
-			const res = await fetch(url.toString(), { cache: 'no-store' });
-			const data = await res.json();
-
-			// Checking data is ok
-			if (!data.ok) {
-				status.textContent = 'Error: ' + (data.error || 'unknown');
-				return;
-			}
-			// And status 
-			if (data.status && data.status !== 'complete') {
-				status.textContent = 'Job status: ' + data.status;
-				return;
-			}
-
-			// Rendering table based on content
-			status.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
-			renderMotifTable(data.rows, fields);
-
-		} catch (e) {
-			status.textContent = 'Error fetching motif data.';
+			document.querySelectorAll('.mot_field').forEach(function(box) {
+			box.checked = ['organism', 'accession', 'motif_name', 'start_pos', 'end_pos', 'score'].includes(box.value);
+			});
 		}
-	}
 	
-	// Updating on click
-	document.getElementById('mot_update').addEventListener('click', updateMotifs);
-	updateMotifs();
+		// Asynch function to update the table upon motif promise
+		async function updateMotifs() {
+			// Filters and status
+			const fields = selectedMotifFields();
+			const status = document.getElementById('mot_status');
+			status.textContent = 'Loading...';
+
+			// Updating download link
+			const dl = document.getElementById('mot_download');
+			dl.href = buildMotifUrl('/~s2883992/website/download_motif_ajax.php').toString();
+	
+			// Trying to fetch
+			try {
+				const url = buildMotifUrl('/~s2883992/website/motif_ajax.php');
+				const res = await fetch(url.toString(), { cache: 'no-store' });
+				const data = await res.json();
+
+				// Checking data is ok
+				if (!data.ok) {
+					status.textContent = 'Error: ' + (data.error || 'unknown');
+					return;
+				}
+				// And status 
+				if (data.status && data.status !== 'complete') {
+					status.textContent = 'Job status: ' + data.status;
+					return;
+				}
+
+				// Rendering table based on content
+				status.textContent = 'Rows: ' + (data.rows ? data.rows.length : 0);
+				renderMotifTable(data.rows, fields);
+
+			} catch (e) {
+				status.textContent = 'Error fetching motif data.';
+			}
+		}
+	
+		// Updating and resetting on click
+		document.getElementById('mot_update').addEventListener('click', updateMotifs);
+		document.getElementById('mot_reset').addEventListener('click', function () {
+			resetMotifFilters();
+			updateMotifs();
+		});
+		updateMotifs();
 	})();
 	</script>
 	_MOTIFJS;
