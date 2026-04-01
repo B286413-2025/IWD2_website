@@ -8,12 +8,51 @@ require_once 'login.php';
 // Base dir for pretty URLs
 $BASE = '/~s2883992/website';
 
+// Random facts for fun
+// Taken from: https://www.sciencefocus.com/science/fun-facts
+// TODO: Eventually expand and use a database and hardcode into job.params
+$loading_facts = [
+	"An hour of walking burns just 250 calories.",
+	"Leftover pasta has extra health benefits.",
+	"A thunderstorm called Hector the Convector arrives everyday at 3pm.",
+	"Earlobes have no biological purpose.",
+	"When you're reading – even silently – the muscles of your mouth, tongue and larynx activate.",
+	"The largest piece of fossilised dinosaur poo discovered is over 30cm long and over two litres in volume.",
+	"Mars isn’t actually round.",
+	"The Universe's average colour is called 'Cosmic latte'.",
+	"The raw ingredients of a human body would cost over £116,000.",
+	"All the world’s bacteria stacked on top of each other would stretch for 10 billion light-years.",
+	"The fear of long words is called Hippopotomonstrosesquippedaliophobia.",
+	"The world’s oldest dog lived to 29.5 years old.",
+	"The world’s oldest cat lived to 38 years and three days old.",
+	"The Moon is gradually drifting away from Earth (around 3cm a year).",
+	"Chainsaws were first invented in Scotland to assist with childbirth.",
+	"In 1912, a man invented a human flying suit, jumped off the Eiffel Tower, and fell to his death.",
+	"Orcas wear other animals as hats. No one knows why.",
+	"Pythons can swallow people whole.",
+	"Hippos can’t swim.",
+	"There are more bacterial cells in your body than human cells.",
+	"Your nails grow faster in hot summer.",
+	"A rainbow on Venus is called a glory.",
+	"Football players spit so much because exercise increases the amount of protein in saliva.",
+	"The biggest butterfly in the world has a 31cm wingspan.",
+	"A lightning bolt is five times hotter than the surface of the Sun.",
+	"The longest anyone has held their breath underwater is over 24.5 minutes.",
+	"Flamingoes aren’t born pink, they actually come into the world with grey/white feathers.",
+	"People who eat whatever they want and stay slim have a slow metabolism, not fast.",
+	"It’s actually fine to drink alcohol on (most) antibiotics.",
+	"Giraffes hum to communicate with each other.",
+	"Murder rates rise in summer.",
+	"'New car smell' is a mix of over 200 chemicals.",
+	"You can’t fold a piece of A4 paper more than eight times.",
+	"Your brain burns 400-500 calories a day."
+];
+
 // Making sure user_hash is set
 $user_hash = $_SESSION['user_hash'] ?? '';
 if ($user_hash === '') {
 	die("Missing user_hash");
 }
-session_write_close();
 
 // MySQL connection, adapted from class code
 try {
@@ -97,6 +136,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		die("Failed to create job");
 	}
 
+	// Verifying loading facts
+	if (!isset($_SESSION['loading_facts']) || !is_array($_SESSION['loading_facts'])) {
+	       	$_SESSION['loading_facts'] = [];
+	}
+
+	// Storing a random fact per jid in the session
+	$_SESSION['loading_facts'][$jid] = $loading_facts[array_rand($loading_facts)];
+	
+	// Releasing session before redirection
+	session_write_close();
+	
 	// Processing query in the background
 	// Adapted from: https://stackoverflow.com/questions/4626860/how-can-i-run-a-php-script-in-the-background-after-a-form-is-submitted
 	$process_query = __DIR__ . "/process_query.php";
@@ -105,7 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$cmd = "/usr/local/bin/php " . escapeshellarg($process_query) . " " . escapeshellarg($jid)
 	. " > " . escapeshellarg($log) . " 2>&1 &";
 	exec($cmd);
-
 
 	// Redirecting to GET so refresh doesn’t re-submit POST
 	header("Location: " . $BASE . "/loading/" . $jid);
@@ -142,6 +191,11 @@ if (!$job) {
 
 // Redirecting to result page if complete
 if ($job['status'] === 'complete') {
+	// No longer needed for the whole session
+	if (isset($_SESSION['loading_facts'][$jid])) {
+		unset($_SESSION['loading_facts'][$jid]);
+	}
+	session_write_close();
 	header("Location: " . $BASE . "/results/" . (int)$jid);
 	die();
 }
@@ -155,6 +209,38 @@ if (!empty($job['job_params'])) {
 	}
 }
 
+// Decide page mode and prepare any session-backed content
+$page_mode = 'unknown';
+$job_fact = '';
+
+// Error
+if ($job['status'] === 'error') {
+	// No need for the fact anymore
+	if (isset($_SESSION['loading_facts'][$jid])) {
+		unset($_SESSION['loading_facts'][$jid]);
+	}
+	session_write_close();
+
+	// Updating page mode
+	$page_mode = 'error';
+
+// Pending
+} elseif ($job['status'] === 'pending') {
+	// Retrieving loading fact
+	if (isset($_SESSION['loading_facts'][$jid])) {	
+		$job_fact = $_SESSION['loading_facts'][$jid];
+	} else {
+	$job_fact = $loading_facts[array_rand($loading_facts)];
+	$_SESSION['loading_facts'][$jid] = $job_fact;
+	}
+	session_write_close();
+
+	// Updating mode
+	$page_mode = 'pending';
+} else {
+	session_write_close();
+}
+
 echo<<<_HTML
 <!doctype html>
 <html lang="en">
@@ -165,9 +251,9 @@ echo<<<_HTML
 <title>Processing Query</title>
 _HTML;
 
-// Checking if job is pending, refreshing every 3 seconds
+// Pending page rendering, refreshing every 3 seconds
 // Adapted from: https://stackoverflow.com/questions/30885877/how-to-automatically-refresh-the-page-after-submitting-a-form
-if ($job['status'] === 'pending') {
+if ($page_mode === 'pending') {
 	echo "<meta http-equiv='refresh' content='3'>";
 }
 
@@ -184,11 +270,19 @@ _BODY;
 
 // Adding informative messages based on status, stopping execution after it
 // Pending view
-if ($job['status'] === 'pending') {
-	echo "<p><b>Status:</b> Processing...</p>";
-	echo "<p>Your analysis is currently running. This page refreshes automatically every 3 seconds.</p>";
+if ($page_mode === 'pending') {
+	echo "<p><b>Status</b>: In progress</p>";
+	echo "<p>Your request is being processed. This page will update automatically.</p>";
+	
+	// Random fact
+	echo "<article class='loading-fact-box'>";
+	echo "<h2>Fun fact while you wait...</h2>";
+	echo "<p><i>" . htmlspecialchars($job_fact) . "</i></p>";
+	echo "<small>Source: <a href='https://www.sciencefocus.com/science/fun-facts' target='_blank'>BBC Science Focus</a></small>";
+	echo "</article><hr>";
 
 	// Displaying table with query details
+	echo "<h2>Job Details:</h2>";
 	echo "<table class='form-table'>";
 	echo "<tr><td><b>Job ID:</b></td><td>" . htmlspecialchars((string)$jid) . "</td></tr>";
 	echo "<tr><td><b>Protein family:</b></td><td>" . htmlspecialchars((string)$job['protein_family']) . "</td></tr>";
@@ -196,11 +290,11 @@ if ($job['status'] === 'pending') {
 
 	// Optional parameters
 	if (!empty($params['clust_outfmt'])) {
-		echo "<tr><td><b>ClustalO format:</b></td><td>" . htmlspecialchars((string)$params['clust_outfmt']) . "</td></tr>";
+		echo "<tr><td><b>Clustal Omega format:</b></td><td>" . htmlspecialchars((string)$params['clust_outfmt']) . "</td></tr>";
 	}
 
 	if (!empty($params['plot_outfmt'])) {
-		echo "<tr><td><b>Plotcon format:</b></td><td>" . htmlspecialchars((string)$params['plot_outfmt']) . "</td></tr>";
+		echo "<tr><td><b>Plotcon output format:</b></td><td>" . htmlspecialchars((string)$params['plot_outfmt']) . "</td></tr>";
 	}
 
 	if (!empty($params['win_size'])) {
@@ -210,25 +304,27 @@ if ($job['status'] === 'pending') {
 	echo "</table>";
 
 	// Another informative message
-	echo "<p>You can <a href='" . $BASE . "/query'>submit another query</a> while this one is processing.</p>";
-	echo "</section></main></body></html>";
+	echo "<p>You can <a href='" . $BASE . "/query'>submit another query</a> while this one runs.</p>";
 	die;
-}
 
 // Error view
-if ($job['status'] === 'error') {
+} elseif ($page_mode === 'error') {
+	// No longer needed
+	if (isset($_SESSION['loading_facts'][$jid])) {
+		unset($_SESSION['loading_facts'][$jid]);
+	}
+	session_write_close();
 	echo "<p style='color:red'><b>Status:</b> Error</p>";
-	echo "<p>Your query could not be completed.</p>";
+	echo "<p>Unfortunately, this query could not be completed.</p>";
 	echo "<pre>" . htmlspecialchars($job['error_message'] ?? '') . "</pre>";
 	echo "<p><a href='" . $BASE . "/query'>Back to query page</a></p>";
-	echo "</section></main></body></html>";
 	die;
+} else {
+	echo "<p>Unknown status.</p>";
+	echo "<p><a href='" . $BASE . "/query'>Back to query page</a></p>";
 }
 
-// Fallback
 echo <<<_HTML
-<p>Unknown status.</p>
-<p><a href='/~s2883992/website/query'>Back to query page</a></p>
 </section>
 </main>
 </body>

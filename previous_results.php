@@ -65,9 +65,9 @@ echo <<<_HTML
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="/~s2883992/website/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/~s2883992/website/styles.css">
 <title>Previous Results</title>
 </head>
 <body>
@@ -80,8 +80,8 @@ echo <<<_HEADER
 <main class='history-shell'>
 <header class='page-title'>
 <h1>Previous Results</h1>
-<p>A list of previous analyses associated with your browser on this website.</p>
-</header><hr />
+<p>Here you can view all analyses previously run from this browser.</p>
+</header><hr>
 _HEADER;
 
 // Informative message if no previous results, link to query page
@@ -98,16 +98,16 @@ _BODY;
 // Summary counts
 echo "<section><h2>Summary</h2>";
 echo "<ul>";
-echo "<li>Total jobs: " . htmlspecialchars((string)($counts['total'])) . "</li>";
-echo "<li>Complete: " . htmlspecialchars(($counts['complete'])) . "</li>";
-echo "<li>Pending: " . htmlspecialchars(($counts['pending'])) . "</li>";
-echo "<li>Error: " . htmlspecialchars(($counts['error'])) . "</li>";
-echo "</ul></section><hr />";
+echo "<li><b>Total jobs:</b> " . htmlspecialchars((string)($counts['total'])) . "</li>";
+echo "<li><b>Completed:</b> " . htmlspecialchars(($counts['complete'])) . "</li>";
+echo "<li><b>Pending:</b> " . htmlspecialchars(($counts['pending'])) . "</li>";
+echo "<li><b>Errors:</b> " . htmlspecialchars(($counts['error'])) . "</li>";
+echo "</ul></section><hr>";
 
 // Filters - displaying options
 echo <<<_FILTERS
 <section class="history-panel" id="job_filters">
-<h2>Filter jobs</h2>
+<h2>Filter Jobs</h2>
 
 <div class="ajax-controls-grid">
 <div>
@@ -122,8 +122,8 @@ echo <<<_FILTERS
 </div>
 <!-- Or by protein/taxon pattern -->
 <div>
-<label title="Search previous jobs by protein family or taxonomic group.">Search protein/taxon:</label>
-<input type='text' id='prev_search' placehold='(optional)' title="Type part of a protein family name or taxon to filter the table.">
+<label title="Filter by protein family or taxonomic group.">Search protein/taxon:</label>
+<input type='text' id='prev_search' placeholder='(optional)' title="Type part of a protein family name or taxon to filter the table.">
 </div>
 </div>
 <div class="ajax-actions-row">
@@ -132,7 +132,7 @@ echo <<<_FILTERS
 <span id='prev_status_msg' class="ajax-status"></span>
 </div>
 
-<div id='prev_status_msg' class="previous-table-wrap"></div>
+<h3>Matching Jobs</h3>
 <div class="previous-table-wrap">
 <div id="prev_results_wrap"></div>
 </div>
@@ -167,7 +167,7 @@ echo <<<_JS
 
 		// No results response
 		if (!rows || rows.length === 0) {
-			wrap.innerHTML = '<p><i>No jobs match the current filter.</i></p>';
+			wrap.innerHTML = '<p><i>No jobs match the current filters.</i></p>';
 			return;
 		}
 
@@ -176,16 +176,16 @@ echo <<<_JS
 		let html = '<table class="previous-table">';
 		// Headers
 		html += '<tr>';
-		html += '<th title="Internal job ID used by the website.">Job ID</th>';
+		html += '<th title="Internal job ID assigned by the website.">Job ID</th>';
 		html += '<th title="Date and time when the job was created.">Date</th>';
 		html += '<th title="Protein family used in the query.">Protein</th>';
 		html += '<th title="Taxonomic group used in the query.">Taxon</th>';
 		html += '<th title="Current job status.">Status</th>';
 		html += '<th title="Plotcon window size used for this job.">Window Size</th>';
 		html += '<th title="Requested plotcon output format.">Plot Format</th>';
-		html += '<th title="Requested Clustal Omega download format.">MSA Format</th>';
+		html += '<th title="Requested Clustal Omega output format.">MSA Format</th>';
 		html += '<th title="Open the job page. Pending jobs open the loading page, completed or failed jobs open the results page.">Link</th>';
-		html += '<th title="Summary of how many matching records were found and how many were retained after filtering.">Dataset</th>';
+		html += '<th title="Summary of dataset size before and after filtering.">Dataset</th>';
 		html += '</tr>';
 
 		// Table rows

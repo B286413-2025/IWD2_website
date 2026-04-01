@@ -8,9 +8,9 @@ echo<<<_HTML
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="/~s2883992/website/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/~s2883992/website/styles.css">
 <title>Submit a Query</title>
 </head>
 <body>	
@@ -23,10 +23,10 @@ echo <<<_HEADER
 <main class="query-shell">
 <header class="page-title">
 <h1>Query Submission</h1>
-<p>Submit a protein family and taxonomic group to analyse conservation and motif content.
-<br />Additional information on default parameters can be seen below.</p>
+<p>Enter a protein family and a taxonomic group to run a conservation and motif analysis.
+<br>You can adjust advanced settings below, or proceed with the default parameters. More details are provided below.</p>
 </header>
-<hr />
+<hr>
 _HEADER;
 
 echo <<<_FORM
@@ -83,22 +83,22 @@ function validate(form) {
 <legend>Query Parameters</legend>  
 <table class="form-table">
 	<tr>	
-	<td><label for="taxon">Taxonomic group:</label></td><td><input id="taxon" type="text" name="taxon" placeholder="Aves" maxlength="100" required/></td>
+	<td><label for="taxon">Taxonomic group:</label></td><td><input id="taxon" type="text" name="taxon" placeholder="Aves" maxlength="100" required></td>
 	</tr>
 	<tr>
-	<td><label for="prot_fam">Protein family:</label></td><td><input id="prot_fam" type="text" name="prot_fam" placeholder="glucose-6-phosphatase" required/></td>
+	<td><label for="prot_fam">Protein family:</label></td><td><input id="prot_fam" type="text" name="prot_fam" placeholder="glucose-6-phosphatase" required></td>
 	</tr>
 </table>
 </fieldset>
 
 <!-- Optional additional query parameters -->
 <details>
-<summary><b>Advanced settings</b></summary>
+<summary><b>Advanced Settings</b></summary>
 	<fieldset>
 	<legend>Clustal Omega Parameters</legend>
 	<table class="form-table">
 		<tr>
-		<td><label for="clust_outfmt">Output Format:</label></td>
+		<td><label for="clust_outfmt">Output format:</label></td>
 		<td>
 			<select name="clust_outfmt" id="clust_outfmt">
 			<option value="fasta" selected>FASTA</option>
@@ -106,8 +106,8 @@ function validate(form) {
 			<option value="msf">MSF</option>
 			<option value="phylip">PHYLIP</option>
 			<option value="selex">SELEX</option>
-			<option value="stockholm">STOCKHOLM</option>
-			<option value="vienna">VIENNA</option>
+			<option value="stockholm">Stockholm</option>
+			<option value="vienna">Vienna</option>
 			</select>
 		</td>
 		</tr>
@@ -118,21 +118,21 @@ function validate(form) {
 	<legend>Plotcon Parameters</legend>
 	<table class="form-table">
 		<tr>
-		<td><label for="win_size">Window Size:</label></td>
+		<td><label for="win_size">Window size:</label></td>
 		<td>
 			<input type="number" name="win_size" id="win_size" min="1" max="100" step="1" value="4">
 		</td> 
-		<td><label for="plot_outfmt">Output Format:</label></td>
+		<td><label for="plot_outfmt">Output format:</label></td>
 		<td>
 			<select name="plot_outfmt" id="plot_outfmt">
-			<option value="png" selected>png</option>
-			<option value="pdf">pdf</option>
-			<option value="svg">svg</option>
-			<option value="gif">gif</option>
-			<option value="data">data</option>
-			<option value="ps">ps</option>
-			<option value="hpgl">hpgl</option>
-			<option value="meta">meta</option>
+			<option value="png" selected>PNG</option>
+			<option value="pdf">PDF</option>
+			<option value="svg">SVG</option>
+			<option value="gif">GIF</option>
+			<option value="data">Data</option>
+			<option value="ps">PS</option>
+			<option value="hpgl">HPGL</option>
+			<option value="meta">Meta</option>
 		</select>
 		</td>
 		</tr>
@@ -141,7 +141,7 @@ function validate(form) {
 
 	<fieldset>
 	<legend>Motif Scan</legend>
-	<p>The motif search currently runs with default <code>patmatmotifs</code> settings.</p>
+	<p>The motif search currently uses the default <code>patmatmotifs</code> settings.</p>
 	</fieldset>
 </details>
 
@@ -150,32 +150,32 @@ function validate(form) {
 </div>
 </form>
 </section>
-<hr />
+<hr>
 _FORM;
 
 // Info
 echo <<<_INFO
 <section id="overview">
 <h2>Overview</h2>
-<p>You can enter a taxonomic group and a protein name to perform the conservation analysis.
-<br />The settings of the analysis outputs can be modified, otherwise defaults will be used.</p>
+<p>Enter a taxonomic group and a protein name to perform the conservation analysis.
+<br>You may customize the output settings, or proceed with the defaults.</p>
 
 <p>
-<b>Default analysis settings:</b><br />
-Clustal Omega output format: FASTA<br />
-Plotcon window size: 4<br>
-Plotcon output format: PNG<br>
-Motif scan: default patmatmotifs settings
+<b>Default settings:</b><br>
+Clustal Omega output format: FASTA
+<br>Plotcon window size: 4 (higher values will produce smoother graphs)
+<br>Plotcon output format: PNG
+<br>Motif scan: default patmatmotifs settings
 </p>
 
 <p>
-<b>Dataset filtering note:</b><br />
-For performance and usability, the website currently applies automatic filtering before alignment.
-Protein sequences shorter than 50 aa, longer than 2000 aa, or containing more than 5% ambiguous residues
-may be excluded. Very large datasets are also limited to at most 500 retained sequences and a total retained size of 200000 aa.
+<b>Dataset filtering note:</b><br>
+To ensure performance and usability, the website currently applies automatic filtering before alignment.
+Sequences shorter than 50 aa, longer than 2000 aa, or containing more than 5% ambiguous residues (X)
+may be excluded. Very large datasets are capped at 500 retained sequences and a total retained size of 200,000 aa.
 </p>
 </section>
-<hr />
+<hr>
 </main>
 _INFO;
 

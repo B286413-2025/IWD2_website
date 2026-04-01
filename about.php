@@ -9,9 +9,9 @@ echo <<<_HTML
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="/~s2883992/website/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/~s2883992/website/styles.css">
 <title>About</title>
 </head>
 <body>
@@ -36,6 +36,7 @@ echo <<<_NAV
 <li><a href="#security">Security and Access Model</a></li>
 <li><a href="#url">URL Structure</a></li>
 <li><a href="#limitations">Current Limitations</a></li>
+<li><a href="#future">Future Directions</a></li>
 <li><a href="#">Back to Top</a></li>
 </ul>
 </aside>
@@ -47,7 +48,7 @@ A more developer-oriented overview of how the website is structured,
 which tools are used, and how the database supports the analysis workflow.
 </p>
 </header>
-<hr />
+<hr>
 _NAV;
 
 echo <<<_BODY
@@ -58,12 +59,12 @@ This website retrieves protein sequence datasets for a selected protein family a
 runs a small bioinformatics analysis pipeline, stores the results in MySQL, and presents them back to the user.
 </p>
 </section>
-<hr />
+<hr>
 
 <section id="workflow">
 <h2>2. Main Workflow</h2>
 <ol>
-<li>The user lands on the home page and receives a browser cookie used to associate jobs with that browser.</li>
+<li>The user lands on the home page and receives a browser-specific cookie to associate jobs with that browser.</li>
 <li>The user submits a query from the query page.</li>
 <li>A job is created in the database with status <code>pending</code>.</li>
 <li>A background worker processes the job:
@@ -75,76 +76,78 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 	<li>Loads the generated outputs to MySQL while preserving job information for each step</li>
 	</ul>
 </li>
-<li>The loading page polls job status until the job becomes <code>complete</code> or <code>error</code>, and refreshes every 3 seconds</li>
-<li>The results page retrieves the stored outputs, summary statistics and interactive tables for further exploration.</li>
+<li>The loading page polls job status every 3 seconds until the job becomes <code>complete</code> or <code>error</code>.</li>
+<li>The results page retrieves the stored outputs, summary statistics and interactive tables for exploration.</li>
 </ol>
 <h3>Note:</h3>
 <p>
-The website runs on a server used for multiple purposes. To prevent extremely large interactive jobs from overwhelming the web workflow 
+The website runs on a shared server. To prevent extremely large interactive jobs from overwhelming the workflow 
 (for example, aligning <a href="https://en.wikipedia.org/wiki/Titin" target="_blank">titin</a> proteins &#128552;),
-sequence retrieval is filtered by minimum length, maximum length, ambiguous residue content, and total retained dataset size (aa and sequence number).
-The applied thresholds and observed retained counts are stored along with other job parameters.
+sequence retrieval is filtered by minimum length, maximum length, ambiguous residue content, and total retained dataset size.
+All thresholds and retained counts are stored alongside the job parameters.
 </p>
 </section>
-<hr />
+<hr>
 
 <section id="pages">
 <h2>3. Main Pages</h2>
 <p>
-The main pages featured on this site, connected by session ID.
-<br />These are mainly wrapper pages rendering background scripts details in the next section.
-<br />Full scripts can be seen in my personal 
-<a href="https://github.com/algra2001/IWD2_website", target="_blank">GitHub repository</a>.
+The main pages of the site, connected via session-based ID.
+<br>These pages primarily wrap the background scripts described in the next section.
+<br>Full source code is available in my
+<a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 <ul>
-<li><b>front</b> - landing home page with site overview and navigation</li>
-<li><b>query</b> - query form for taxon, protein family, and analysis options</li>
+<li><b>front</b> - landing page with site overview and navigation</li>
+<li><b>query</b> - form for entering taxon, protein family, and analysis options</li>
 <li><b>loading</b> - creates a pending job and waits for processing to finish</li>
 <li><b>results</b> - wrapper page for presenting completed results</li>
 <li><b>example</b> - explanatory page for a precomputed example dataset</li>
 <li><b>previous_results</b> - lists previous jobs associated with the current browser</li>
-<li><b>help_page</b> - user-facing biological help page</li>
+<li><b>help_page</b> - user-facing help and interpretation guide</li>
+<li><b>about</b> - web-developer oriented help page</li>
 <li><b>credit</b> - statement of credits and sources used in creating the site</li>
 <li><b>not_found.php</b> - custom 404 page</li>
 </ul>
 </section>
-<hr />
+<hr>
 
 <section id="scripts">
 <h2>4. Background Scripts</h2>
 <p>
-Background PHP scripts that allow pages transition, manipulation and overall site functionality.
-<br />Full scripts can be seen in my personal 
+Background PHP scripts that support page transitions, data retrieval, and overall site functionality.
+<br>Full scripts are available in my 
 <a href="https://github.com/algra2001/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 <ul>
-<li><b>set_cookies.php</b> - creates and hashes the site cookie used for browser-level job ownership</li>
+<li><b>set_cookies.php</b> - creates and hashes the browser‑level cookie used for job ownership</li>
 <li><b>process_query.php</b> - CLI worker that processes a job by job ID</li>
-<li><b>results_content.php</b> - reusable results rendering block used by results and example pages</li>
-<li><b>get_output.php</b> - returns stored output files (MSA and plotcon) from the database, either for presenting or download</li>
-<li><b>alignment_ajax.php</b> - returns alignment overview data for table update</li>
-<li><b>motif_ajax.php</b> - returns motif overview data for table update</li>
+<li><b>results_content.php</b> - reusable results-rendering block used by results and example pages</li>
+<li><b>get_output.php</b> - returns stored output files (MSA and plotcon) for display or download</li>
+<li><b>alignment_ajax.php</b> - returns alignment overview data for interactive tables</li>
+<li><b>motif_ajax.php</b> - returns motif overview data for interactive tables</li>
 <li><b>download_alignment_ajax.php</b> - exports filtered alignment tables as TSV</li>
 <li><b>download_motif_ajax.php</b> - exports filtered motif tables as TSV</li>
-<li><b>download_motif_hits.php</b> - exports total motif hits report as TSV</li>
+<li><b>download_motif_hits.php</b> - exports total motif-hit summary as TSV</li>
 </ul>
 </section>
-<hr />
+<hr>
 
 <section id="py_scripts">
 <h2>5. Python and Analysis Scripts</h2>
 <p>
-Analysis python scripts for data retrieval and analysis. All generate a TSV file suitable for SQL loading along with the outputs.
-<br />Full scripts can be seen in my personal
+Python scripts used for data retrieval and analysis. Each script produces a TSV file suitable for SQL loading,
+along with any associated outputs.
+<br>Full scripts are available in my
 <a href="https://github.com/algra2001/IWD2_website/tree/master/py_scripts" target="_blank">GitHub repository</a>.
 </p>
 <ul>
 <li><b>download_sequences.py</b> - retrieves sequence data from NCBI</li>
-<li><b>msa_to_sql.py</b> - runs Clustal Omega</li>
+<li><b>msa_to_sql.py</b> - runs Clustal Omega and prepares alignment output</li>
 <li><b>patmat_to_sql.py</b> - runs patmatmotifs on each sequence</li>
 </ul>
 </section>
-<hr />
+<hr>
 
 <section id="database">
 <h2>6. Database Overview</h2>
@@ -153,20 +156,27 @@ Analysis python scripts for data retrieval and analysis. All generate a TSV file
 <h3>Main Tables</h3>
 <p>The tables used to store analysis outputs and manage user-job data.</p>
 <ul>
-<li><b>queries</b> - contains unique combinations of protein family and taxon</li>
-<li><b>sequences</b> - contains accession, organism, and raw sequence data</li>
+<li><b>queries</b> - unique combinations of protein family and taxon</li>
+<li><b>sequences</b> - accession, organism, and raw sequence data</li>
 <li><b>seq_group</b> - links queries to the sequences associated with them</li>
-<li><b>jobs</b> - contains per job metadata, including status and JSON job parameters</li>
-<li><b>aligned_sequences</b> - aligned sequences (MSA) for a given job</li>
-<li><b>analysis_outputs</b> - per analysis stored results (text or binary), like MSA file and plotcon output</li>
-<li><b>motif_hits</b> - motif hit results from patmatmotifs</li>
+<li><b>jobs</b> - job metadata, including status and JSON parameters</li>
+<li><b>aligned_sequences</b> - aligned sequences (MSA) for each job</li>
+<li><b>analysis_outputs</b> - stored analysis outputs (text or binary)</li>
+<li><b>motif_hits</b> - motif hits from patmatmotifs</li>
 </ul>
 
 <h3>Storage Model</h3>
 <p>
 All outputs are stored in the database. Binary outputs such as images are stored in <code>blob_data</code>, and text outputs such as MSA reports are stored in <code>text_data</code>.
-<br />This avoids depending on writable web directories for persistent output storage, and allows easy and comprehensive output querying.
+<br>This provides several advantages:
 </p>
+<ul>
+<li><b>Integrity:</b> the entire state of the website is contained in a single database, making it easy to migrate or back up.</li>
+<li><b>Security:</b> avoids relying on writable web directories, which can introduce permission issues or security risks on shared servers.</li>
+<li><b>Consistency:</b> each output is tied to a specific job ID and stored with its metadata, ensuring that results remain stable and reproducible even if external tools or databases change.</li>
+<li><b>Queryability:</b> storing outputs in MySQL allows flexible retrieval, filtering, and joining with other job‑level information without needing to manage separate files.</li>
+<li><b>Cleanup and ownership:</b> because jobs are associated with a browser‑derived hash, storing everything in MySQL makes it straightforward to enforce access rules and remove old jobs cleanly.</li>
+</ul>
 
 <h3>Schema Diagram</h3>
 <p>
@@ -184,11 +194,11 @@ The following diagram summarises the current database structure used by the webs
 </figure>
 
 <p>
-The full SQL script used to generate the database, which includes indexing and unique constraints as well, can be seen in my personal 
+The full SQL script used to generate the database, including indexing and constraints, is available in my
 <a href="https://github.com/algra2001/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">GitHub repository</a>.
 </p>
 </section>
-<hr />
+<hr>
 
 <section id="tools">
 <h2>7. Tools Used</h2>
@@ -203,40 +213,60 @@ The full SQL script used to generate the database, which includes indexing and u
 <li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">EMBOSS 6.6.0.0 patmatmotifs</a></li>
 </ul>
 </section>
-<hr />
+<hr>
 
 <section id="security">
 <h2>8. Data Security</h2>
 <p>
-Jobs are associated with a browser through a cookie-derived hash stored in the database.
-<br />This is used to reduce guessability of results and prevent direct access to another user's outputs by URL alone.
-<br />Example job is separately marked and may be accessed without matching the user hash.
+Jobs are associated with a browser through a cookie‑derived hash stored in the database.
+<br>This reduces guessability of job URLs and prevents access to another user’s results.
+<br>The example job is marked separately and may be accessed without a matching user hash.
 </p>
 </section>
-<hr />
+<hr>
 
 <section id="url">
 <h2>9. URL Structure</h2>
 <p>
-The website uses rewritten URLs through <code>.htaccess</code> so that pages can be accessed with cleaner paths
-instead of explicit <code>.php</code> filenames in the visible URL.
+The website uses <code>.htaccess</code> rewrite rules to provide clean URLs
+instead of exposing underlying <code>.php</code> filenames.
 </p>
 </section>
-<hr />
+<hr>
 
 <section id="limitations">
 <h2>10. Current Limitations</h2>
 <p>The website is currently limited in a number of ways, as development is active.</p>
 <ul>
-<li>Large queries may take substantial time to process.</li>
-<li>Sequence retrieval currently depends on external database availability and naming patterns.</li>
+<li>Large queries may take longer time to process.</li>
+<li>Sequence retrieval currently depends on external database availability and naming conventions.</li>
 <li>Some results are query-level rather than strict job-level snapshots.</li>
 <li>The user interface and CSS styling are still being refined.</li>
-<li>Additional analyses and external resources are still not fully integrated into the website.</li>
-<li>Current worker is automatically launched, ideally a queuing system would be implemented.</li>
+<li>Additional analyses and external resources are not yet fully integrated.</li>
+<li>Current worker is automatically launched, ideally a proper queuing system would be implemented.</li>
 </ul>
 </section>
-<hr />
+<hr>
+
+<section id="future">
+<h2>11. Future Directions</h2>
+<p>
+Development is ongoing, and several improvements are planned to expand functionality, improve performance,
+and enhance the user experience. Planned future work includes:
+</p>
+<ul>
+<li><b>Support for taxon IDs:</b> allowing queries using NCBI Taxonomy IDs in addition to scientific names.</li>
+<li><b>Improved job scheduling:</b> replacing the current auto‑launched worker with a proper queuing system to handle multiple simultaneous jobs and possible server errors more efficiently.</li>
+<li><b>Additional analyses:</b> Integration of more EMBOSS tools, motif databases, or structural prediction resources.</li>
+<li><b>Enhanced visualisations:</b> adding new plots such a protein structure.</li>
+<li><b>User accounts:</b> optional login system to persist results across devices instead of relying solely on browser‑based identifiers.</li>
+<li><b>Expanded filtering options:</b> finer control over sequence inclusion criteria and dataset preprocessing.</li>
+<li><b>UI and accessibility improvements:</b> continued refinement of layout, styling, and responsiveness.</li>
+<li><b>Query reanalysis:</b> resubmission of a previously-performed query with adjusted parameters.</li>
+</ul>
+</section>
+<hr>
+
 </main>
 </div>
 </body>

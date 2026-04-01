@@ -1,4 +1,8 @@
+## SQL script used to create the database
 # Adapted from class code
+# Indexing informed by:
+# https://www.jamesmichaelhickey.com/database-indexes/
+
 DROP DATABASE IF EXISTS s2883992_web_project;
 CREATE DATABASE s2883992_web_project;
 USE s2883992_web_project;
@@ -10,10 +14,7 @@ CREATE TABLE `queries` (
 `taxon` VARCHAR(255) NOT NULL,
 `query_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (query_id),
-CONSTRAINT `full_query` UNIQUE (`protein_family`, `taxon`), #unique constraint for protein-taxon combination
-# TODO: Think a bit more about indexing
-INDEX `idx_taxon` (`taxon`), 
-INDEX `idx_protein` (`protein_family`)
+CONSTRAINT `full_query` UNIQUE (`protein_family`, `taxon`) #unique constraint for protein-taxon combination
 );
 
 # sequences table for storing unique sequences once
@@ -45,8 +46,8 @@ CREATE TABLE `jobs` (
 `job_params` JSON NULL,
 PRIMARY KEY (`job_id`),
 FOREIGN KEY (`query_id`) REFERENCES `queries`(`query_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-INDEX (`user_hash`),
-INDEX (`query_id`)
+INDEX (`query_id`),
+INDEX `idx_jobs_user_history` (`user_hash`, `is_example`, `job_date`, `job_id`)
 );
 
 # Table for analysis output
@@ -58,11 +59,11 @@ CREATE TABLE `analysis_outputs` (
 `mime_type` VARCHAR(100) NULL,
 `file_name` VARCHAR(255) NULL,
 `parameters` TEXT NULL,
-# `file_path` VARCHAR(255) NULL, # Only if I find a secure way to save files
 `text_data` LONGTEXT NULL,
 `blob_data` LONGBLOB NULL,
 PRIMARY KEY (`output_id`),
-FOREIGN KEY (`job_id`) REFERENCES `jobs`(`job_id`) ON DELETE CASCADE ON UPDATE CASCADE
+FOREIGN KEY (`job_id`) REFERENCES `jobs`(`job_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+INDEX `idx_outputs_job_type_created` (`job_id`, `analysis_type`, `created_at`, `output_id`)
 );
 
 # Table for alignment results
@@ -89,7 +90,6 @@ CREATE TABLE `motif_hits` (
 PRIMARY KEY (`hit_id`),
 FOREIGN KEY (`job_id`) REFERENCES `jobs`(`job_id`) ON DELETE CASCADE ON UPDATE CASCADE,
 FOREIGN KEY (`accession`) REFERENCES `sequences`(`accession`) ON DELETE CASCADE ON UPDATE CASCADE,
-INDEX (`job_id`),
-INDEX (`accession`)
+INDEX `idx_motif_job_name` (`job_id`, `motif_name`)
 );
 

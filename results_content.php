@@ -14,11 +14,11 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 
 	// Query information
 	echo "<article id='query_param'>";
-	echo "<h2>Query parameters</h2>";
+	echo "<h2>Query Parameters</h2>";
 	echo "<p><b>Protein:</b> " . htmlspecialchars((string)$job['protein_family']) . "<br>";
 	echo "<b>Taxon:</b> " . htmlspecialchars((string)$job['taxon']) . "<br>";
 	echo "<b>Job ID:</b> " . htmlspecialchars((string)$jid) . "</p>";
-	echo "</article><hr />";
+	echo "</article><hr>";
 
 	// Checking for job status
   // Error case - informative message and suggestion
@@ -114,7 +114,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			echo "<li><b>Maximum retained sequences</b> = " . htmlspecialchars((string)$max_kept) . "</li>";
 		}
 		echo "</ul>";
-		echo "</section><hr />";
+		echo "</section><hr>";
 	}
 
 	// Complete case - displaying results
@@ -181,7 +181,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			// In-page
       echo "<img src='" . $BASE . "/get_output.php?output_id=" . $oid . "' alt='plotcon'>";
 			echo "</a>";
-			echo "<p><i>Click for the full-size version.</i></p>";
+			echo "<p><i>Click to view the full-size image.</i></p>";
 		} else {
 			echo "<p><i>No browser-displayable plotcon image found.</i></p>";
 		}
@@ -202,7 +202,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		echo "</div>";
 	}
 
-	echo "</article><hr />";
+	echo "</article><hr>";
 
 	// Summary statistics
 	// Query internal ID
@@ -274,7 +274,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	// Echoing HTML table
 	// TODO: perhaps download summary statistics?
 	echo "<article id='summary'>";
-	echo "<h2>Summary statistics</h2>";
+	echo "<h2>Summary Statistics</h2>";
 	echo "<table class='summary-table'>";
 	echo "<tr><th>Protein</th><td>" . htmlspecialchars((string)$job['protein_family']) . "</td></tr>";
 	echo "<tr><th>Taxon</th><td>" . htmlspecialchars((string)$job['taxon']) . "</td></tr>";
@@ -290,10 +290,10 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	}
 
   // Continue table
-	echo "<tr><th>Mean raw seq length</th><td>" . htmlspecialchars((string)number_format($mean_len, 2)) . "</td></tr>";
+	echo "<tr><th>Mean raw sequence length</th><td>" . htmlspecialchars((string)number_format($mean_len, 2)) . "</td></tr>";
 	echo "<tr><th>Top motif (number of occurrences)</th><td>" . htmlspecialchars((string)$top_motif) . " (" . htmlspecialchars((string)$top_motif_n) . ")</td></tr>";
 	echo "<tr><th>Number of motif types</th><td>" . htmlspecialchars($n_motif_types) . "</td></tr>";
-	echo "</table></article><hr />";
+	echo "</table></article><hr>";
 
 	// Download results
 	// MSA
@@ -322,7 +322,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		foreach ($msa_rows as $r) {
 			$oid = (int)$r['output_id'];
 			$fname = htmlspecialchars((string)($r['file_name'] ?? ("msa_" . $oid)));
-			echo "<a class='button-link' href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download MSA: " . $fname . "</a>";
+			echo "<a class='button-link' href='" . $BASE . "/get_output.php?output_id=" . $oid . "&download=1'>Download MSA (" . $fname . 
+				")</a>";
 		}
 		echo "</div>";
 	}
@@ -330,8 +331,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	// Motifs report, offering download with download_motif_hits.php
 	echo "<h3>Motif report</h3>";
 	echo "<div class='button-group'>";
-	echo "<a class='button-link' href='" . $BASE . "/download_motif_hits.php?job_id=" . (int)$jid . "'>Download motif hits: TSV</a>";
-	echo "</div></article><hr />";
+	echo "<a class='button-link' href='" . $BASE . "/download_motif_hits.php?job_id=" . (int)$jid . "'>Download motif hits (TSV)</a>";
+	echo "</div></article><hr>";
 
 	// Alignment Overview
 	// AJAX table adapted from ELM (GPT 5.2) code, https://elm.edina.ac.uk/elm-new
@@ -410,13 +411,13 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		<a id='aln_download' class='button-link download-button' href='#'>Download Current Table (TSV)</a>
 	</div>
 	<p class="ajax-note">
-	Click accession numbers to open the NCBI protein record, and organism names to search NCBI Taxonomy.
+	Click accession numbers to open the NCBI protein record, and organism names to search the NCBI Taxonomy database.
 	</p>
 	<div id='aln_status' class='ajax-status'></div>
 	<div id='aln_table_wrap'></div>
 	</div>
 	</article>
-	<hr />
+	<hr>
 	_ALIGNMENT;
 
 	// JS for ajax functionality
@@ -648,7 +649,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		</select>
 	</div>
 	<div>
-		<label "Choose ascending or descending order.">Direction</label>
+		<label title="Choose ascending or descending order.">Direction</label>
 		<select id="mot_dir" title="Sort ascending or descending.">
 		<option value="asc" selected>Ascending</option>
 		<option value="desc">Descending</option>
@@ -697,13 +698,13 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 	<a id="mot_download" class="button-link download-button" href="#">Download Current Table (TSV)</a>
 	</div>
 	<p class="ajax-note">
-	Click accession numbers to open the NCBI protein record, and organism names to search NCBI Taxonomy.
+	Click accession numbers to open the NCBI protein record, and organism names to search the NCBI Taxonomy database.
 	</p>
 	<div id="mot_status" class="ajax-status"></div>
 	<div id="mot_table_wrap"></div>
 	</div>
 	</article>
-	<hr />
+	<hr>
 	_MOTIF;
 
 	// JS for ajax functionality

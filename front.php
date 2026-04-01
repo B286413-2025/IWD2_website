@@ -8,9 +8,9 @@ echo<<<_HTML
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="/~s2883992/website/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/~s2883992/website/styles.css">
 <title>Protein conservation analysis</title>
 </head>
 <body>
@@ -24,15 +24,19 @@ echo<<<_BODY
 <main class="page-main">
 <header class="page-title">
 <h1>Protein Conservation Analysis</h1>
-<h2>Welcome to my website for protein conservation!</h2>
-<p>In this site you can look at the conservation levels of a protein family from a certain taxonomic group.
-<br/>It was created as a web assessment component of the <a href="https://www.drps.ed.ac.uk/current/dpt/cxbilg11016.htm" target="_blank">Introduction to Website and Database Design</a> course at the <a href="https://www.ed.ac.uk/" target="_blank">University of Edinburgh</a>.</p>
+<h2>Welcome!</h2>
+<p>This website allows you to explore the conservation of protein families across different taxonomic groups.
+<br>It developed as part of the 
+<a href="https://www.drps.ed.ac.uk/current/dpt/cxbilg11016.htm" target="_blank">Introduction to Website and Database Design
+</a> course at the 
+<a href="https://www.ed.ac.uk/" target="_blank">University of Edinburgh</a>.
+</p>
 </header>
 <hr>
 
 <section>
 <h2>Analysis Overview</h2>
-<p>Conservation analysis will include four main steps:</p>
+<p>The conservation analysis consists of four main steps:</p>
 <ol>
 <li><b>Sequence retrieval</b> from the
 <a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank"> 
@@ -40,10 +44,10 @@ echo<<<_BODY
 protein database</a>.</li>
 <li><b>Multiple sequence alignment</b> using
 <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a>.</li>
-<li><b>Conservation plot</b> generated with 
+<li><b>Conservation plot</b> with 
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">plotcon</a>.</li>
-<li><b>Searching for known motifs</b> against the 
-<a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> database using
+<li><b>Motif detection</b> using 
+<a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> patterns via
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/patmatmotifs" target="_blank">patmatmotifs</a>.</li>
 </ol>
 </section>
@@ -52,8 +56,7 @@ protein database</a>.</li>
 <section>
 <h2>Your Options</h2>
 <p>
-You can view the precomputed example results of conservation of glucose-6-phosphatase proteins
-<br/>in birds (<i>Aves</i>), submit your own query, or view previous results.
+You can explore the precomputed example set, submit your own query, or revisit previous results.
 <h3>Main Actions</h3>
 <div class="button-group">
 <form action="/~s2883992/website/example" method="get">

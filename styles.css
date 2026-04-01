@@ -917,3 +917,24 @@ a[href="#"] {
     width: 100%;
   }
 }
+
+/* Loading page fact box */
+.loading-fact-box {
+  background: #eef6ff;
+  border: 1px solid #c9def4;
+  border-left: 6px solid var(--text-heading);
+}
+
+.loading-fact-box h2 {
+  margin-top: 0;
+}
+
+.loading-fact-box p {
+  margin-bottom: 0.5rem;
+}
+
+.loading-fact-box small {
+  display: block;
+  color: var(--text-muted);
+}
+

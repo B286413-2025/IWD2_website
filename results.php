@@ -91,9 +91,9 @@ echo <<<_HTML
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="stylesheet" href="/~s2883992/website/styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/~s2883992/website/styles.css">
 <title>Results</title>
 </head>
 <body>
@@ -126,7 +126,7 @@ echo <<<_NAV2
 <header class="page-title">
 <h1>Results</h1>
 </header>
-<hr />
+<hr>
 _NAV2;
 
 // Rendering results using the rendering script
@@ -135,7 +135,9 @@ render_results_content($conn, $job, $jid);
 
 echo <<<_HTML3
 </main>
+</div>
 </body>
 </html>
 _HTML3;
 ?>
+
