@@ -42,12 +42,22 @@ $organism_like = isset($_GET['organism_like']) ? trim((string)$_GET['organism_li
 if (strlen($organism_like) > 255) {
 	$organism_like = substr($organism_like, 0, 255);
 }
+$organism_like = str_replace(
+	['\\', '%', '_'],
+	['\\\\', '\%', '\_'],
+	$organism_like
+);
 
 // Motif name pattern
 $motif_like = isset($_GET['motif_like']) ? trim((string)$_GET['motif_like']) : '';
 if (strlen($motif_like) > 255) {
 	$motif_like = substr($motif_like, 0, 255);
 }
+$motif_like = str_replace(
+        ['\\', '%', '_'],
+        ['\\\\', '\%', '\_'],
+        $motif_like
+);
 
 // Minimal score
 $min_score = null;

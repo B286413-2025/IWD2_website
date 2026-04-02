@@ -73,19 +73,21 @@ debugging, code explanation, and some code generation during development.
 <a href="https://elm.edina.ac.uk/elm/elm" target="_blank">ELM</a> (GPT 5.2)
 </p>
 
-<p><b>How AI was used:</b></p>
+<b>How AI was used:</b>
 <ul>
 <li>Debugging PHP, Python, JavaScript, and SQL syntax errors</li>
-<li>Explaining error messages and suggesting fixes</li>
+<li>Explaining error messages and suggesting fixes and methods</li>
 <li>Generating or refining code for:
 <ul>
-<li>Integrating analysis scripts with PHP wrappers</li>
+<li>Analysis scripts integration with PHP wrappers</li>
 <li>Image output storage and handling in MySQL</li>
-<li>AJAX table rendering</li>
+<li>AJAX table rendering and forced header download</li>
+<li>Sticky side navigation menus</li>
 <li>Cookie-based user identification</li>
 <li>CSS initial structure and refinement</li>
 </ul>
 </li>
+<li>Refining overall text clarity and correcting grammatical mistakes.</li>
 </ul>
 
 <p><b>Important note:</b><br>
@@ -122,7 +124,7 @@ All AI-generated suggestions were reviewed, tested, and modified where necessary
 - protein names verification
 </li>
 <li>
-<a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega </a> documentation
+<a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a> documentation
 </li>
 <li>
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/plotcon" target="_blank">EMBOSS plotcon help</a>
@@ -152,7 +154,13 @@ All AI-generated suggestions were reviewed, tested, and modified where necessary
 <a href="https://app.chartdb.io/" target="_blank">ChartDB</a> - schema diagram generation
 </li>
 <li>
+<a href="https://www.jamesmichaelhickey.com/database-indexes/" target="_blank">James Hickey article</a> - indexing logic
+</li>
+<li>
 <a href="https://www.sciencefocus.com/science/fun-facts" target="_blank">BBC Science Focus</a> - fun facts for the loading page
+</li>
+<li>
+<a href="https://validator.w3.org/nu/" target="_blank">Nu Html Checker</a> - verifying HTML syntax
 </li>
 </ul>
 </section>
@@ -201,7 +209,7 @@ W3Schools entry</a>
 <li><a href="https://dev.mysql.com/downloads/mysql/8.0.html" target="_blank">MySQL 8.0.45</a></li>
 <li>JavaScript (browser-native)</li>
 <li><a href="https://www.python.org/downloads/release/python-3135/" target="_blank">Python 3.13.5</a></li>
-<li><a href="https://biopython.org/wiki/Download" target="_blank">Biopython 1.86</a></li>
+<li><a href="https://biopython.org/docs/1.86/" target="_blank">Biopython 1.86</a></li>
 <li><a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega 1.2.4</a></li>
 <li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">EMBOSS 6.6.0.0 plotcon</a></li>
 <li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">EMBOSS 6.6.0.0 patmatmotifs</a></li>

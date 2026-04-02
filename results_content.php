@@ -62,11 +62,6 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		if ($raw_match_num > $kept_num) {
 			$show_filter_note = true;
 		}
-		
-		// Or if number of matches was larger than retmax	
-		if ($retmax !== null && $raw_match_num > $retmax) {
-			$show_filter_note = true;
-		}
 	}
 	
 	// Displaying informative note
@@ -77,12 +72,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		
 		// Original match num
 		if ($raw_match_num !== null) {
-			echo "NCBI returned <b>" . htmlspecialchars((string)$raw_match_num) . "</b> matching records. ";
-		}
-
-		// Number of returned records if mismatch
-		if ($retmax !== null && $raw_match_num !== null && $raw_match_num > $retmax) {
-			echo "Up to <b>" . htmlspecialchars((string)$retmax) . "</b> records can be retrieved for processing. ";
+			echo "NCBI returned <b>" . htmlspecialchars((string)$raw_match_num) . "</b> matching records, ";
 		}
 
 		// Number of retained records
@@ -112,6 +102,9 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		}
 		if ($max_kept !== null) {
 			echo "<li><b>Maximum retained sequences</b> = " . htmlspecialchars((string)$max_kept) . "</li>";
+		}
+		if ($retmax !== null) {
+			echo "<li><b>Maximum considered sequences</b> = " . htmlspecialchars((string)$retmax) . "</li>";
 		}
 		echo "</ul>";
 		echo "</section><hr>";
@@ -376,8 +369,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 		<input type='text' id='aln_organism' placeholder='(optional)' title="Partial organism-name search.">
 	</div>
 	<div>
-		<label title="Show only rows with at least this amount of gap characters (-).">Minimum Gap Count</label>
-		<input type='number' id='aln_min_gap_count' min='0' step='1' placeholder='(optional)' title="Gap count = number of gap characters in the aligned sequence.">
+		<label title="Show only rows with at most this fraction of gaps.">Maximum Gap Fraction</label>
+		<input type='number' id='aln_max_gap_fraction' min='0' max='1' step='0.0001' placeholder='(optional)' title="Gap fraction = gap count divided by aligned sequence length.">
 	</div>
 	<div>
 		<label title="Show only rows with at least this fraction of gaps.">Minimum Gap Fraction</label>
@@ -464,7 +457,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			const sort = document.getElementById('aln_sort').value;
 			const dir = document.getElementById('aln_dir').value;
 			const org = document.getElementById('aln_organism').value.trim();
-			const minGapCount = document.getElementById('aln_min_gap_count').value.trim();
+			const maxGapFraction = document.getElementById('aln_max_gap_fraction').value.trim();
 			const minGapFraction = document.getElementById('aln_min_gap_fraction').value.trim();
 			const showAligned = document.getElementById('show_aligned').checked;
 			const fields = selectedFields();
@@ -480,8 +473,8 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			if (org !== '') {
 				url.searchParams.set('organism_like', org);
 			}
-			if (minGapCount !== '') {
-				url.searchParams.set('min_gap_count', minGapCount);
+			if (maxGapFraction !== '') {
+				url.searchParams.set('max_gap_fraction', maxGapFraction);
 			}
 			if (minGapFraction !== '') {
 				url.searchParams.set('min_gap_fraction', minGapFraction);
@@ -564,7 +557,7 @@ function render_results_content(PDO $conn, array $job, int $jid): void
 			document.getElementById('aln_sort').value = 'gap_fraction';
 			document.getElementById('aln_dir').value = 'desc';
 			document.getElementById('aln_organism').value = '';
-			document.getElementById('aln_min_gap_count').value = '';
+			document.getElementById('aln_max_gap_fraction').value = '';
 			document.getElementById('aln_min_gap_fraction').value = '';
 			document.getElementById('show_aligned').checked = false;
 

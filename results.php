@@ -102,7 +102,7 @@ _HTML;
 include 'cookies.html';
 include 'menuf.php';
 
-// Sticky navigation menu on the left
+// Sticky navigation menu on the left, informed by ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 echo <<<_NAV
 <div class="page-shell">
 <aside class="page-side-nav">
@@ -116,7 +116,7 @@ if ($show_filter_note) {
 echo <<<_NAV2
 <li><a href="#plotcon_res">Plotcon Results</a></li>
 <li><a href="#summary">Summary Statistics</a></li>
-<li><a href="#files">Downloads</a></li>
+<li><a href="#files">Text Files</a></li>
 <li><a href="#alignment_ajax">Alignment Overview</a></li>
 <li><a href="#motif_ajax">Motif Overview</a></li>
 <li><a href="#">Back to Top</a></li>

@@ -43,11 +43,19 @@ $organism_like = isset($_GET['organism_like']) ? trim((string)$_GET['organism_li
 if (strlen($organism_like) > 255) {
 	$organism_like = substr($organism_like, 0, 255);
 }
+$organism_like = str_replace(
+	['\\', '%', '_'],
+	['\\\\', '\%', '\_'],
+	$organism_like
+);
 
 // Minimal gap count
-$min_gap_count = isset($_GET['min_gap_count']) && $_GET['min_gap_count'] !== '' ? (int)$_GET['min_gap_count'] : null;
-if ($min_gap_count !== null && $min_gap_count < 0) {
-	$min_gap_count = 0;
+$max_gap_fraction = isset($_GET['max_gap_fraction']) && $_GET['max_gap_fraction'] !== '' ? (float)$_GET['max_gap_fraction'] : null;
+if ($max_gap_fraction !== null && $max_gap_fraction < 0) {
+	$max_gap_fraction = 0;
+}
+if ($max_gap_fraction !== null && $max_gap_fraction > 1) {
+	$max_gap_fraction = 1;
 }
 
 // Minimal gap fraction
@@ -162,9 +170,9 @@ try {
 	}
 
 	$having = [];
-	if ($min_gap_count !== null) {
-		$having[] = "gap_count >= :min_gap_count";
-		$params[':min_gap_count'] = $min_gap_count;
+	if ($max_gap_fraction !== null) {
+		$having[] = "gap_fraction <= :max_gap_fraction";
+		$params[':max_gap_fraction'] = $max_gap_fraction;
 	}
 
 	if ($min_gap_fraction !== null) {

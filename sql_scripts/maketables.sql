@@ -2,6 +2,7 @@
 # Adapted from class code
 # Indexing informed by:
 # https://www.jamesmichaelhickey.com/database-indexes/
+# Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 
 DROP DATABASE IF EXISTS s2883992_web_project;
 CREATE DATABASE s2883992_web_project;
@@ -58,7 +59,7 @@ CREATE TABLE `analysis_outputs` (
 `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `mime_type` VARCHAR(100) NULL,
 `file_name` VARCHAR(255) NULL,
-`parameters` TEXT NULL,
+`parameters` JSON NULL,
 `text_data` LONGTEXT NULL,
 `blob_data` LONGBLOB NULL,
 PRIMARY KEY (`output_id`),

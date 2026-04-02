@@ -76,8 +76,7 @@ This website retrieves protein sequences for a chosen protein family within a se
 <p>
 This plot shows how strongly conserved the aligned sequences are across the dataset.
 <br>It displays the conservation score (y-axis) across residue positions (x-axis). 
-<br>Higher scores suggest greater similarity and stronger conservation.
-<br>Highly conserved regions are often functionally or structurally important.
+<br>Higher scores suggest greater similarity and stronger conservation, which often reflect functionally or structurally important regions.
 </p>
 
 <h3>2. Summary Statistics</h3>
@@ -125,6 +124,7 @@ This section lists PROSITE motifs detected in the dataset.
 
 <section id="valid_query">
 <h2>What Counts as a Valid Query</h2>
+<p>A few guidelines for valid queries.</p>
 
 <h3>Protein</h3>
 <ul>
@@ -174,8 +174,7 @@ When filtering occurs, the results page reports how many records were originally
 If you're having trouble getting results, try adjusting the query:
 </p>
 <ul>
-<li>If your job fails, try broadening the query (e.g., more general taxon or protein family)</li>
-<li>If too few sequences are found, consider using a higher‑level taxonomic group.</li>
+<li>If your job fails and too few sequences are found, try broadening the query (e.g., more general taxon or protein family)</li>
 <li>If the dataset is too large, try narrowing the taxon or choosing a more specific protein family.</li>
 </ul>
 </section>

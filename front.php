@@ -26,9 +26,8 @@ echo<<<_BODY
 <h1>Protein Conservation Analysis</h1>
 <h2>Welcome!</h2>
 <p>This website allows you to explore the conservation of protein families across different taxonomic groups.
-<br>It developed as part of the 
-<a href="https://www.drps.ed.ac.uk/current/dpt/cxbilg11016.htm" target="_blank">Introduction to Website and Database Design
-</a> course at the 
+<br>It was developed as part of the 
+<a href="https://www.drps.ed.ac.uk/current/dpt/cxbilg11016.htm" target="_blank">Introduction to Website and Database Design</a> course at the 
 <a href="https://www.ed.ac.uk/" target="_blank">University of Edinburgh</a>.
 </p>
 </header>
@@ -46,7 +45,7 @@ protein database</a>.</li>
 <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a>.</li>
 <li><b>Conservation plot</b> with 
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">plotcon</a>.</li>
-<li><b>Motif detection</b> using 
+<li><b>Motif detection</b> of 
 <a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> patterns via
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/help/patmatmotifs" target="_blank">patmatmotifs</a>.</li>
 </ol>

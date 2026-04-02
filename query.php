@@ -24,7 +24,7 @@ echo <<<_HEADER
 <header class="page-title">
 <h1>Query Submission</h1>
 <p>Enter a protein family and a taxonomic group to run a conservation and motif analysis.
-<br>You can adjust advanced settings below, or proceed with the default parameters. More details are provided below.</p>
+<br>You can adjust advanced settings, or proceed with the default parameters (see details <a href="#overview">below</a>).</p>
 </header>
 <hr>
 _HEADER;
@@ -171,7 +171,7 @@ Clustal Omega output format: FASTA
 <p>
 <b>Dataset filtering note:</b><br>
 To ensure performance and usability, the website currently applies automatic filtering before alignment.
-Sequences shorter than 50 aa, longer than 2000 aa, or containing more than 5% ambiguous residues (X)
+Sequences shorter than 50 aa, longer than 2,000 aa, or containing more than 5% ambiguous residues (X)
 may be excluded. Very large datasets are capped at 500 retained sequences and a total retained size of 200,000 aa.
 </p>
 </section>

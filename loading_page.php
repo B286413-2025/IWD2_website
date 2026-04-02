@@ -149,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	
 	// Processing query in the background
 	// Adapted from: https://stackoverflow.com/questions/4626860/how-can-i-run-a-php-script-in-the-background-after-a-form-is-submitted
+	// Debugged with ELM (GPT 5.2), https://elm.edina.ac.uk/elm-new
 	$process_query = __DIR__ . "/process_query.php";
 	$log = sys_get_temp_dir() . "/bioapp_job_" . $jid . ".log";
 	

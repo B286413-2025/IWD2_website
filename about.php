@@ -73,7 +73,7 @@ runs a small bioinformatics analysis pipeline, stores the results in MySQL, and 
 	<li>Runs Clustal Omega</li>
 	<li>Runs EMBOSS plotcon</li>
 	<li>Runs EMBOSS patmatmotifs</li>
-	<li>Loads the generated outputs to MySQL while preserving job information for each step</li>
+	<li>Loads the generated outputs to MySQL while documenting job information for each step</li>
 	</ul>
 </li>
 <li>The loading page polls job status every 3 seconds until the job becomes <code>complete</code> or <code>error</code>.</li>
@@ -92,15 +92,15 @@ All thresholds and retained counts are stored alongside the job parameters.
 <section id="pages">
 <h2>3. Main Pages</h2>
 <p>
-The main pages of the site, connected via session-based ID.
+The main pages of the site, connected via session-based ID, are detailed below.
 <br>These pages primarily wrap the background scripts described in the next section.
 <br>Full source code is available in my
 <a href="https://github.com/B286413-2025/IWD2_website" target="_blank">GitHub repository</a>.
 </p>
 <ul>
 <li><b>front</b> - landing page with site overview and navigation</li>
-<li><b>query</b> - form for entering taxon, protein family, and analysis options</li>
-<li><b>loading</b> - creates a pending job and waits for processing to finish</li>
+<li><b>query</b> - form for entering taxon, protein family, and analysis options (form validation with JavaScript)</li>
+<li><b>loading</b> - creates a pending job and waits for processing to finish (automatic refresh, polling job status)</li>
 <li><b>results</b> - wrapper page for presenting completed results</li>
 <li><b>example</b> - explanatory page for a precomputed example dataset</li>
 <li><b>previous_results</b> - lists previous jobs associated with the current browser</li>
@@ -121,14 +121,15 @@ Background PHP scripts that support page transitions, data retrieval, and overal
 </p>
 <ul>
 <li><b>set_cookies.php</b> - creates and hashes the browser‑level cookie used for job ownership</li>
-<li><b>process_query.php</b> - CLI worker that processes a job by job ID</li>
-<li><b>results_content.php</b> - reusable results-rendering block used by results and example pages</li>
-<li><b>get_output.php</b> - returns stored output files (MSA and plotcon) for display or download</li>
-<li><b>alignment_ajax.php</b> - returns alignment overview data for interactive tables</li>
-<li><b>motif_ajax.php</b> - returns motif overview data for interactive tables</li>
-<li><b>download_alignment_ajax.php</b> - exports filtered alignment tables as TSV</li>
-<li><b>download_motif_ajax.php</b> - exports filtered motif tables as TSV</li>
-<li><b>download_motif_hits.php</b> - exports total motif-hit summary as TSV</li>
+<li><b>process_query.php</b> - CLI worker that processes a job by job ID (runs python scripts, loads results to MySQL)</li>
+<li><b>results_content.php</b> - results rendering script used by results and example pages 
+(queries database, displays results on page with HTML and JavaScript)</li>
+<li><b>get_output.php</b> - returns stored output files (MSA and plotcon) for display or download (forced header download)</li>
+<li><b>alignment_ajax.php</b> - returns alignment overview data as JSON for interactive tables in results_content.php</li>
+<li><b>motif_ajax.php</b> - returns motif overview data as JSON for interactive tables in results_content.php</li>
+<li><b>download_alignment_ajax.php</b> - exports filtered alignment tables as TSV (alignment_ajax.php with forced header download)</li>
+<li><b>download_motif_ajax.php</b> - exports filtered motif tables as TSV (motif_ajax.php with forced header download)</li>
+<li><b>download_motif_hits.php</b> - exports total motif-hit summary as TSV (forced header download)</li>
 </ul>
 </section>
 <hr>
@@ -142,7 +143,7 @@ along with any associated outputs.
 <a href="https://github.com/B286413-2025/IWD2_website/tree/master/py_scripts" target="_blank">GitHub repository</a>.
 </p>
 <ul>
-<li><b>download_sequences.py</b> - retrieves sequence data from NCBI</li>
+<li><b>download_sequences.py</b> - retrieves sequence data from NCBI using BioPython</li>
 <li><b>msa_to_sql.py</b> - runs Clustal Omega and prepares alignment output</li>
 <li><b>patmat_to_sql.py</b> - runs patmatmotifs on each sequence</li>
 </ul>
@@ -151,7 +152,11 @@ along with any associated outputs.
 
 <section id="database">
 <h2>6. Database Overview</h2>
-<p>The database stores both reusable query/sequence information and job-specific outputs.</p>
+<p>The database stores both reusable query/sequence information and job-specific outputs. A simplified schema can be seen 
+<a href="#schema">below</a>.
+<br>The full SQL script used to generate the database, including indexing and constraints, is available in my
+<a href="https://github.com/B286413-2025/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">GitHub repository</a>.
+</p>
 
 <h3>Main Tables</h3>
 <p>The tables used to store analysis outputs and manage user-job data.</p>
@@ -159,11 +164,17 @@ along with any associated outputs.
 <li><b>queries</b> - unique combinations of protein family and taxon</li>
 <li><b>sequences</b> - accession, organism, and raw sequence data</li>
 <li><b>seq_group</b> - links queries to the sequences associated with them</li>
-<li><b>jobs</b> - job metadata, including status and JSON parameters</li>
+<li><b>jobs</b> - job metadata, including status and parameters (JSON)</li>
 <li><b>aligned_sequences</b> - aligned sequences (MSA) for each job</li>
 <li><b>analysis_outputs</b> - stored analysis outputs (text or binary)</li>
 <li><b>motif_hits</b> - motif hits from patmatmotifs</li>
 </ul>
+
+<h3>Indexing</h3>
+<p>
+The tables are indexed to support the most common queries.
+Indexing logic was informed by this <a href="https://www.jamesmichaelhickey.com/database-indexes/" target="_blank">James Hickey article</a>.
+</p>
 
 <h3>Storage Model</h3>
 <p>
@@ -171,16 +182,16 @@ All outputs are stored in the database. Binary outputs such as images are stored
 <br>This provides several advantages:
 </p>
 <ul>
-<li><b>Integrity:</b> the entire state of the website is contained in a single database, making it easy to migrate or back up.</li>
+<li><b>Integrity:</b> all the data of the website is contained in a single relational database.</li>
 <li><b>Security:</b> avoids relying on writable web directories, which can introduce permission issues or security risks on shared servers.</li>
 <li><b>Consistency:</b> each output is tied to a specific job ID and stored with its metadata, ensuring that results remain stable and reproducible even if external tools or databases change.</li>
-<li><b>Queryability:</b> storing outputs in MySQL allows flexible retrieval, filtering, and joining with other job‑level information without needing to manage separate files.</li>
-<li><b>Cleanup and ownership:</b> because jobs are associated with a browser‑derived hash, storing everything in MySQL makes it straightforward to enforce access rules and remove old jobs cleanly.</li>
+<li><b>Queryability:</b> storing all outputs in MySQL allows flexible retrieval, filtering, and joining with other job‑level information without needing to manage separate files.</li>
+<li><b>Ownership:</b> because jobs are associated with a browser hash, storing everything in MySQL makes it easier to apply access rules and remove old jobs cleanly.</li>
 </ul>
 
-<h3>Schema Diagram</h3>
+<h3 id="schema">Schema Diagram</h3>
 <p>
-The following diagram summarises the current database structure used by the website
+The following diagram summarizes the current database structure used by the website
 (generated with <a href="https://app.chartdb.io/" target="_blank">ChartDB</a>).
 </p>
 
@@ -193,10 +204,6 @@ The following diagram summarises the current database structure used by the webs
 </figcaption>
 </figure>
 
-<p>
-The full SQL script used to generate the database, including indexing and constraints, is available in my
-<a href="https://github.com/B286413-2025/IWD2_website/blob/master/sql_scripts/maketables.sql" target="_blank">GitHub repository</a>.
-</p>
 </section>
 <hr>
 
@@ -207,7 +214,7 @@ The full SQL script used to generate the database, including indexing and constr
 <li><a href="https://dev.mysql.com/downloads/mysql/8.0.html" target="_blank">MySQL 8.0.45</a></li>
 <li>JavaScript (browser-native)</li>
 <li><a href="https://www.python.org/downloads/release/python-3135/" target="_blank">Python 3.13.5</a></li>
-<li><a href="https://biopython.org/wiki/Download" target="_blank">Biopython 1.86</a></li>
+<li><a href="https://biopython.org/docs/1.86/" target="_blank">Biopython 1.86</a></li>
 <li><a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega 1.2.4</a></li>
 <li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">EMBOSS 6.6.0.0 plotcon</a></li>
 <li><a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">EMBOSS 6.6.0.0 patmatmotifs</a></li>
@@ -218,8 +225,8 @@ The full SQL script used to generate the database, including indexing and constr
 <section id="security">
 <h2>8. Data Security</h2>
 <p>
-Jobs are associated with a browser through a cookie‑derived hash stored in the database.
-<br>This reduces guessability of job URLs and prevents access to another user’s results.
+Jobs are associated with a browser through a cookie hash stored in the database.
+<br>This prevents access to another user’s results by guessing job IDs.
 <br>The example job is marked separately and may be accessed without a matching user hash.
 </p>
 </section>
@@ -236,11 +243,11 @@ instead of exposing underlying <code>.php</code> filenames.
 
 <section id="limitations">
 <h2>10. Current Limitations</h2>
-<p>The website is currently limited in a number of ways, as development is active.</p>
+<p>The website is currently limited in a number of ways.</p>
 <ul>
-<li>Large queries may take longer time to process.</li>
+<li>Large queries may take longer to process.</li>
 <li>Sequence retrieval currently depends on external database availability and naming conventions.</li>
-<li>Some results are query-level rather than strict job-level snapshots.</li>
+<li>Some results are query-level rather than strict job-level.</li>
 <li>The user interface and CSS styling are still being refined.</li>
 <li>Additional analyses and external resources are not yet fully integrated.</li>
 <li>Current worker is automatically launched, ideally a proper queuing system would be implemented.</li>
@@ -257,12 +264,12 @@ and enhance the user experience. Planned future work includes:
 <ul>
 <li><b>Support for taxon IDs:</b> allowing queries using NCBI Taxonomy IDs in addition to scientific names.</li>
 <li><b>Improved job scheduling:</b> replacing the current auto‑launched worker with a proper queuing system to handle multiple simultaneous jobs and possible server errors more efficiently.</li>
-<li><b>Additional analyses:</b> Integration of more EMBOSS tools, motif databases, or structural prediction resources.</li>
-<li><b>Enhanced visualisations:</b> adding new plots such a protein structure.</li>
+<li><b>Additional analyses:</b> further integration of external tools, for example more EMBOSS tools or motif databases.</li>
+<li><b>Enhanced visualisations:</b> adding new plots such a protein structure or gap distribution.</li>
 <li><b>User accounts:</b> optional login system to persist results across devices instead of relying solely on browser‑based identifiers.</li>
 <li><b>Expanded filtering options:</b> finer control over sequence inclusion criteria and dataset preprocessing.</li>
+<li><b>Query reanalysis:</b> resubmission of previously-performed queries with adjusted parameters.</li>
 <li><b>UI and accessibility improvements:</b> continued refinement of layout, styling, and responsiveness.</li>
-<li><b>Query reanalysis:</b> resubmission of a previously-performed query with adjusted parameters.</li>
 </ul>
 </section>
 <hr>

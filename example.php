@@ -100,7 +100,7 @@ echo <<<_HTML2
 <ol>
 <li>Sequence retrieval from the <a href="https://www.ncbi.nlm.nih.gov/protein" target="_blank">NCBI protein database</a> </li>
 <li>Multiple sequence alignment using <a href="https://www.ebi.ac.uk/jdispatcher/msa/clustalo" target="_blank">Clustal Omega</a></li>
-<li>Generation of a conservation plot using <a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">Plotcon</a></li>
+<li>Generation of a conservation plot using <a href="https://www.bioinformatics.nl/cgi-bin/emboss/plotcon" target="_blank">plotcon</a></li>
 <li>Motif detection using 
 <a href="https://prosite.expasy.org/" target="_blank">PROSITE</a> patterns via EMBOSS 
 <a href="https://www.bioinformatics.nl/cgi-bin/emboss/patmatmotifs" target="_blank">patmatmotifs</a></li>
@@ -113,7 +113,7 @@ echo <<<_HTML2
 You can explore the conservation plot, browse the alignment and motif tables, and download all associated files.</p>
 <p>The results include:</p>
 <ul>
-<li><b>Conservation plot</b> (plotcon), showing conservation scores along the alignment.</li>
+<li><b>Conservation plot</b> (plotcon), showing similarity scores along the alignment.</li>
 <li><b>Summary statistics</b> such as sequence count, number of represented organisms, alignment length, and most common motif.</li>
 <li><b>Downloadable text files</b> including the MSA and motif hits summary.</li>
 <li><b>Interactive alignment and motif tables</b> with filtering and download options.</li>
